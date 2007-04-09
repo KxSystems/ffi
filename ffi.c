@@ -129,6 +129,7 @@ call(K x, K y, K z) /*cif,func,values*/
 	pvalues = malloc(sizeof(V*)*z->n);
 	DO(z->n,values[i] = getvalue(kK(z)[i], pvalues+i));
 	ffi_call(pcif, func, &ret, values);
+	free(pvalues);
 	free(values);
 	R retvalue(pcif->rtype, ret);
 }
