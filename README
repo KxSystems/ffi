@@ -1,0 +1,27 @@
+ffiq - Foreign Function Interface for Q 
+
+Examples:
+q)\l ffi.q / populates .ffi namespace
+q)\d .ffi  / following examples run in .ffi namespace
+q)cf[`strlen](`abc;::) / arguments should be passed as generic lists
+3
+q)cf[`strlen]("abc\000";::) / null-terminate q-strings
+3
+q)n:cf[`printf]("%s %c %hd %d %ld %g\n\000";`test;"x";1h;2;3j;4f)
+test x 1 2 3 4
+q)b:n#"\000" / buffer
+q)n:cf[`sprintf](b;"%s %c %hd %d %ld %g\n\000";`test;"x";1h;2;3j;4f)
+q)b
+"test x 1 2 3 4\n"
+
+q)cf[("h";`getppid)]() / specify return type, no args
+13615h
+q)cf[("e";`libm.so`powf)]2 2e,(::) / explicit library
+4e
+
+/ BLAS - all arguments should be lists
+q)x:10#2f;cf[("f";`libblas.so`ddot_)](list count x; x;list 1;x;list 1)
+40f
+q)cf[(" ";`libblas.so`daxpy_)](list count x;list 2f; x;list 1;x;list 1)
+q)x / <- a*x+y, a=x=y=2
+6 6 6 6 6 6 6 6 6 6f

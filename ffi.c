@@ -2,45 +2,13 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ffi.h>
 #include "k.h"
 
 extern K dl(V*f,I n);
 int myputs(char*s){R puts(s);}
 ZK null() {K x=ka(101);xi=0;R x;}
-K1(test){
-      ffi_cif cif;
-      ffi_type *args[1];
-      void *values[1];
-      char *s;
-      int rc;
-      /*
-      int (*puts)(const char *) = dlsym(0, "puts");
-      if (!puts) R orr("dlsym");
-
-      puts("xyz\n"); R null();
-      */
-      /* Initialize the argument info vectors */
-      args[0] = &ffi_type_pointer;
-      values[0] = &s;
-
-      /* Initialize the cif */
-      if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
-                       &ffi_type_uint, args) == FFI_OK)
-        {
-          s = "Hello World!";
-          ffi_call(&cif, (void*)myputs, &rc, values);
-          /* rc now holds the result of the call to puts */
-
-          /* values holds a pointer to the function's arg, so to
-             call puts() again all we need to do is change the
-             value of s */
-          s = "This is cool!";
-          ffi_call(&cif, (void*)myputs, &rc, values);
-        }
-
-      R ks(ss("test"));
-}
 Z ffi_type* 
 chartotype(G c)
 {
@@ -134,8 +102,124 @@ call(K x, K y, K z) /*cif,func,values*/
 	R retvalue(pcif->rtype, ret);
 }
 
+Z ffi_type *
+gettype(H t)
+{
+	switch (t) {
+	case -KB:
+	case -KG: R &ffi_type_uint8;
+	case -KH: R &ffi_type_sint16;
+	case -KM:
+	case -KD:
+	case -KU:
+	case -KV:
+	case -KT:
+	case -KI: R &ffi_type_sint32;
+	case -KJ: R &ffi_type_sint64;
+	case -KE: R &ffi_type_float;
+	case -KZ:
+	case -KF: R &ffi_type_double;
+	case -KS: R &ffi_type_pointer;
+	case -2: R &ffi_type_void;
+	}
+	R &ffi_type_pointer;
+}
 
-#define N 6
+Z K2(cf) /* simple call: f|(r;f),args */
+{
+	K r;
+	Z char t[] = "kb  xhijefcs mdz uvtC";
+	ffi_cif cif;
+	ffi_type **types;
+	ffi_status rc;
+	char *f;
+	H rt; /* return type */
+	I i, n;  /* args count */
+	void *handle, *func, **values, **pvalues;
+	char ret[FFI_SIZEOF_ARG];
+	if (xt == 0) {
+		char *p;
+		if (xn != 2 || xK[0]->t != -KC)
+			R krr("type");
+		if ((p=strchr(t, xK[0]->g)))
+			rt = t - p;
+		else
+			R krr("type");
+		if (xK[1]->t == -KS) {
+			f = xK[1]->s;
+			handle = 0;
+		}
+		else if (xK[1]->t == KS && xK[1]->n == 2) {
+			handle = dlopen(kS(xK[1])[0], RTLD_LAZY);
+			if (!handle)
+				R krr(dlerror());
+			f = kS(xK[1])[1];
+		}
+	}
+	else if (xt == -KS) {
+		rt = -KI;
+		f = xs;
+		handle = 0;
+	}
+	else
+		R krr("type");
+	if (y->t != 0)
+		R krr("type");
+	n = y->n;
+	dlerror();    /* Clear any existing error */
+	func = dlsym(handle, f);
+	if (!func)
+		R krr(dlerror());
+	types = malloc(sizeof(ffi_type*)*n);
+	values = malloc(sizeof(V*)*n);
+	pvalues = malloc(sizeof(V**)*n);
+	for (i = 0; i != n; ++i) {
+		types[i] = gettype(kK(y)[i]->t);
+		values[i] = getvalue(kK(y)[i], pvalues+i);
+	}
+	rc = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, n,
+			  gettype(rt), types);
+	if (FFI_OK == rc)
+		ffi_call(&cif, func, &ret, values);
+	free(pvalues);
+	free(values);
+	free(types);
+	if (handle)
+		dlclose(handle);
+	if (FFI_OK != rc)
+		R krr("prep");
+	if (rt == 0)
+		R *(K*)ret;
+	if (rt == -2)
+		R null();
+	if (rt == -20) {
+		char *rs = *(char**)ret;
+		r = ktn(KC, 1+strlen(rs));
+		memcpy(kG(r), rs, r->n);
+		R r;
+	}
+	r = ka(rt);
+	switch (rt) {
+	case -KB:
+	case -KG: R r->g = *(G*)ret, r;
+	case -KH: R r->h = *(H*)ret, r;
+	case -KM:
+	case -KD:
+	case -KU:
+	case -KV:
+	case -KT:
+	case -KI: R r->i = *(I*)ret, r;
+	case -KJ: R r->j = *(J*)ret, r;
+	case -KE: R r->e = *(E*)ret, r;
+	case -KZ:
+	case -KF: R r->f = *(F*)ret, r;
+	case -KS: R r->s = ss(*(S*)ret), r;
+	}
+	R krr("rtype");
+}
+
+
+#define N 4
 #define FFIQ_ENTRY(i, name, def) \
 	xS[i] = ss(name); kK(y)[i] = def
 #define FFIQ_FUNC(i, name, nargs) FFIQ_ENTRY(i, #name, dl(name, nargs))
@@ -144,11 +228,8 @@ K1(ffi)
 {
 	K y = ktn(0,N); x = ktn(KS,N);
 	FFIQ_ENTRY(0, "", null());
-	FFIQ_FUNC(1, test,  1); 
-	FFIQ_FUNC(2, cif,   2);
-	FFIQ_FUNC(3, call,  3);
-	/* ffi_abi enum */ 
-	FFIQ_ENUM(4, FFI_SYSV);
-	FFIQ_ENUM(5, FFI_DEFAULT_ABI);
+	FFIQ_FUNC(1, cif,   2);
+	FFIQ_FUNC(2, call,  3);
+	FFIQ_FUNC(3, cf,  2);
 	R xD(x,y);
 }
