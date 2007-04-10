@@ -25,3 +25,19 @@ q)x:10#2f;cf[("f";`libblas.so`ddot_)](list count x; x;list 1;x;list 1)
 q)cf[(" ";`libblas.so`daxpy_)](list count x;list 2f; x;list 1;x;list 1)
 q)x / <- a*x+y, a=x=y=2
 6 6 6 6 6 6 6 6 6 6f
+
+/ Callbacks
+q)cmp:{0N!x,y;(x>y)-x<y} 
+q)x:3 1 2;cf[(" ";`qsort)](x;3;4;(cmp;"ii")) 
+1 2
+3 1
+3 2
+q)x
+1 2 3
+q)x:`c`a`b;cf[(" ";`qsort)](x;3;8;(cmp;"ss")) 
+`a`b
+`c`a
+`c`b
+q)x
+`a`b`c
+

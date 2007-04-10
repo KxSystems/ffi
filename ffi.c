@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ffi.h>
+#include <assert.h>
 #include "k.h"
 
 extern K dl(V*f,I n);
-int myputs(char*s){R puts(s);}
+
 ZK null() {K x=ka(101);xi=0;R x;}
+
 Z ffi_type* 
 chartotype(G c)
 {
@@ -51,11 +53,17 @@ Z K2(cif) /* atypes, rtype */
 }
 
 ZV*
+getclosure(K x, V**p);
+
+ZV*
 getvalue(K x, V**p)
 {
 	if (xt < 0)
 		R &xg;
-	*p = xG;
+	if (xt == 0)
+		*p = getclosure(x, p);
+	else
+		*p = xG;
 	R (V*)p;
 }
 
@@ -125,6 +133,93 @@ gettype(H t)
 	R &ffi_type_pointer;
 }
 
+ZV
+closurefunc(ffi_cif *cif, 
+	    void *resp, 
+	    void **args, 
+	    void *userdata) 
+{
+	I i, n = cif->nargs;
+	K x = ktn(0,n);
+	K t = kK((K)userdata)[1];
+	for (i = 0; i != n; ++i) {
+		switch (kC(t)[i]) {
+		case 'g':
+			xK[i] =  kg(**(G**)args[i]);
+			break;
+		case 'h':
+			xK[i] =  kh(**(H**)args[i]);
+			break;
+		case 'i':
+			xK[i] =  ki(**(I**)args[i]);
+			break;
+		case 's':
+			xK[i] =  ks(**(S**)args[i]);
+			break;
+		}
+	}
+
+	K r = dot(kK((K)userdata)[0], x);
+	r0(x);
+	switch (r->t) {
+	case -KB:
+	case -KG:
+		*(G*)resp = r->g;
+		break;
+	case -KH: 
+		*(H*)resp = r->h;
+		break;
+	case -KM:
+	case -KD:
+	case -KU:
+	case -KV:
+	case -KT:
+	case -KI:
+		*(I*)resp = r->i;
+		break;
+	case -KJ:
+		*(J*)resp = r->j;
+		break;
+	case -KE:
+		*(E*)resp = r->e;
+		break;
+	case -KZ:
+	case -KF:
+		*(F*)resp = r->f;
+		break;
+	case -KS:
+		*(S*)resp = r->s;
+		break;
+	}
+	r0(r);
+}
+
+ZV*
+getclosure(K x, V**p)
+{
+	ffi_status rc;
+	ffi_closure *pcl = malloc(sizeof(ffi_closure));
+	ffi_cif   *cif = malloc(sizeof(ffi_cif));
+	I n = xK[1]->n;
+	ffi_type  **types = malloc(sizeof(ffi_type*)*n);
+	DO(n, types[i] = chartotype(kC(xK[1])[i]));
+	rc = ffi_prep_cif(cif, FFI_DEFAULT_ABI, n, &ffi_type_pointer, types);
+	assert(rc == FFI_OK);
+	rc = ffi_prep_closure(pcl, cif, closurefunc, r1(x)); 
+	assert(rc == FFI_OK);
+
+	R pcl;
+}
+
+ZV
+freeclosure(V* p)
+{
+	ffi_closure *pcl = p;
+	free(pcl->cif->arg_types);
+	free(pcl->cif);
+	free(pcl);
+}
+
 Z K2(cf) /* simple call: f|(r;f),args */
 {
 	K r;
@@ -172,7 +267,7 @@ Z K2(cf) /* simple call: f|(r;f),args */
 		R krr(dlerror());
 	types = malloc(sizeof(ffi_type*)*n);
 	values = malloc(sizeof(V*)*n);
-	pvalues = malloc(sizeof(V**)*n);
+	pvalues = calloc(n, sizeof(V*));
 	for (i = 0; i != n; ++i) {
 		types[i] = gettype(kK(y)[i]->t);
 		values[i] = getvalue(kK(y)[i], pvalues+i);
@@ -181,6 +276,10 @@ Z K2(cf) /* simple call: f|(r;f),args */
 			  gettype(rt), types);
 	if (FFI_OK == rc)
 		ffi_call(&cif, func, &ret, values);
+	for (i = 0; i != n; ++i) {
+		if (pvalues[i] && values[i] != pvalues+i)
+			freeclosure(pvalues[i]);
+	}
 	free(pvalues);
 	free(values);
 	free(types);
@@ -233,3 +332,5 @@ K1(ffi)
 	FFIQ_FUNC(3, cf,  2);
 	R xD(x,y);
 }
+
+
