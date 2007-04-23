@@ -28,16 +28,21 @@ q)x / <- a*x+y, a=x=y=2
 
 / Callbacks
 q)cmp:{0N!x,y;(x>y)-x<y} 
-q)x:3 1 2;cf[(" ";`qsort)](x;3;4;(cmp;"ii")) 
+q)x:3 1 2;cf[(" ";`qsort)](x;3;4;(cmp;"II")) 
 1 2
 3 1
 3 2
 q)x
 1 2 3
-q)x:`c`a`b;cf[(" ";`qsort)](x;3;8;(cmp;"ss")) 
+q)x:`c`a`b;cf[(" ";`qsort)](x;3;8;(cmp;"SS")) 
 `a`b
 `c`a
 `c`b
 q)x
 `a`b`c
+
+/ Register a callback on a handle
+r:{b:20#"\000";n:cf[`read](x;b;20);0N!n#b;0}
+cf[`sd1](h;(r;list"i")) / start handler
+cf[`sd0](h;::)          / stop handler
 

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <ffi.h>
 #include <assert.h>
+#include <ctype.h>
+
 #include "k.h"
 
 extern K dl(V*f,I n);
@@ -14,7 +16,7 @@ ZK null() {K x=ka(101);xi=0;R x;}
 Z ffi_type* 
 chartotype(G c)
 {
-	switch (c) {
+	switch (tolower(c)) {
 	case 'g': R &ffi_type_uint8;
 	case 'h': R &ffi_type_sint16;
 	case 'i': R &ffi_type_sint32;
@@ -62,8 +64,10 @@ getvalue(K x, V**p)
 		R &xg;
 	if (xt == 0)
 		*p = getclosure(x, p);
-	else
+	else if (xt < 20)
 		*p = xG;
+	else
+		*p = x;
 	R (V*)p;
 }
 
@@ -145,15 +149,45 @@ closurefunc(ffi_cif *cif,
 	for (i = 0; i != n; ++i) {
 		switch (kC(t)[i]) {
 		case 'g':
+			xK[i] =  kg(*(G*)args[i]);
+			break;
+		case 'G':
 			xK[i] =  kg(**(G**)args[i]);
 			break;
 		case 'h':
+			xK[i] =  kh(*(H*)args[i]);
+			break;
+		case 'H':
 			xK[i] =  kh(**(H**)args[i]);
 			break;
 		case 'i':
+			xK[i] =  ki(*(I*)args[i]);
+			break;
+		case 'I':
 			xK[i] =  ki(**(I**)args[i]);
 			break;
+		case 'j':
+			xK[i] =  kj(*(J*)args[i]);
+			break;
+		case 'J':
+			xK[i] =  kj(**(J**)args[i]);
+			break;
+		case 'e':
+			xK[i] =  ke(*(E*)args[i]);
+			break;
+		case 'E':
+			xK[i] =  ke(**(E**)args[i]);
+			break;
+		case 'f':
+			xK[i] =  kf(*(F*)args[i]);
+			break;
+		case 'F':
+			xK[i] =  kf(**(F**)args[i]);
+			break;
 		case 's':
+			xK[i] =  ks(*(S*)args[i]);
+			break;
+		case 'S':
 			xK[i] =  ks(**(S**)args[i]);
 			break;
 		}
@@ -250,6 +284,8 @@ Z K2(cf) /* simple call: f|(r;f),args */
 				R krr(dlerror());
 			f = kS(xK[1])[1];
 		}
+		else
+			R krr("type");
 	}
 	else if (xt == -KS) {
 		rt = -KI;
@@ -317,8 +353,21 @@ Z K2(cf) /* simple call: f|(r;f),args */
 	R krr("rtype");
 }
 
+K1(dump){fprintf(stderr,"%p: r=%d t=%hd u=%hd n=%d\n",
+		 x, xr, xt, xu, xt>0?xn:1); R null();}
+K2(kfn)
+{
+	V *func;
+	if (xt != -KS || y->t != -KI)
+		R krr("type");
+	dlerror();    /* Clear any existing error */
+	func = dlsym(0, xs);
+	if (!func)
+		R krr(dlerror());
+	R dl(func, y->i);
+}
 
-#define N 4
+#define N 6
 #define FFIQ_ENTRY(i, name, def) \
 	xS[i] = ss(name); kK(y)[i] = def
 #define FFIQ_FUNC(i, name, nargs) FFIQ_ENTRY(i, #name, dl(name, nargs))
@@ -330,6 +379,8 @@ K1(ffi)
 	FFIQ_FUNC(1, cif,   2);
 	FFIQ_FUNC(2, call,  3);
 	FFIQ_FUNC(3, cf,  2);
+	FFIQ_FUNC(4, dump,  1);
+	FFIQ_FUNC(5, kfn, 2);
 	R xD(x,y);
 }
 
