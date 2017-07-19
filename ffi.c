@@ -9,8 +9,6 @@
 
 #include "k.h"
 
-extern K dl(V*f,I n);
-
 ZK null() {K x=ka(101);xi=0;R x;}
 
 Z ffi_type* 
@@ -81,6 +79,8 @@ retvalue(ffi_type *type, V *x)
 	case FFI_TYPE_UINT32:
 	case FFI_TYPE_SINT32:
 	case FFI_TYPE_INT:     R ki(*(I*)x);
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_SINT64:	 R kj(*(J*)x);
 	case FFI_TYPE_FLOAT:   R ke(*(E*)x);
 	case FFI_TYPE_DOUBLE:  R kf(*(F*)x);
 	}
@@ -103,7 +103,7 @@ call(K x, K y, K z) /*cif,func,values*/
 	pcif = (ffi_cif*)kG(xK[0]);
 	if(pcif->abi != FFI_DEFAULT_ABI)
 		R krr("abi");
-	func = dlsym(0,y->s);
+	func = dlsym(RTLD_DEFAULT,y->s);
 	if (!func) R orr("dlsym");
 	values = malloc(sizeof(V*)*z->n);
 	pvalues = malloc(sizeof(V*)*z->n);
@@ -132,7 +132,7 @@ gettype(H t)
 	case -KZ:
 	case -KF: R &ffi_type_double;
 	case -KS: R &ffi_type_pointer;
-	case -2: R &ffi_type_void;
+	case -UU: R &ffi_type_void;
 	}
 	R &ffi_type_pointer;
 }
@@ -276,10 +276,10 @@ Z K2(cf) /* simple call: f|(r;f),args */
 			R krr("type");
 		if (xK[1]->t == -KS) {
 			f = xK[1]->s;
-			handle = 0;
+			handle = RTLD_DEFAULT;
 		}
 		else if (xK[1]->t == KS && xK[1]->n == 2) {
-			handle = dlopen(kS(xK[1])[0], RTLD_LAZY);
+			handle = dlopen(kS(xK[1])[0], RTLD_NOW);
 			if (!handle)
 				R krr(dlerror());
 			f = kS(xK[1])[1];
@@ -290,7 +290,7 @@ Z K2(cf) /* simple call: f|(r;f),args */
 	else if (xt == -KS) {
 		rt = -KI;
 		f = xs;
-		handle = 0;
+		handle = RTLD_DEFAULT;
 	}
 	else
 		R krr("type");
@@ -319,7 +319,7 @@ Z K2(cf) /* simple call: f|(r;f),args */
 	free(pvalues);
 	free(values);
 	free(types);
-	if (handle)
+	if (handle!=RTLD_DEFAULT)
 		dlclose(handle);
 	if (FFI_OK != rc)
 		R krr("prep");
@@ -361,7 +361,7 @@ K2(kfn)
 	if (xt != -KS || y->t != -KI)
 		R krr("type");
 	dlerror();    /* Clear any existing error */
-	func = dlsym(0, xs);
+	func = dlsym(RTLD_DEFAULT, xs);
 	if (!func)
 		R krr(dlerror());
 	R dl(func, y->i);
