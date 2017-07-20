@@ -1,5 +1,6 @@
 /* -*- mode: c; c-basic-offset: 8 -*- */
 #include <dlfcn.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,7 +74,9 @@ ZK
 retvalue(ffi_type *type, V *x)
 {
 	switch (type->type) {
-	case FFI_TYPE_VOID:    R null();
+	case FFI_TYPE_VOID:    R (K)0;
+	case FFI_TYPE_UINT8:
+	case FFI_TYPE_SINT8:	 R kg(*(G*)x);
 	case FFI_TYPE_UINT16:
 	case FFI_TYPE_SINT16:  R kh(*(H*)x);
 	case FFI_TYPE_UINT32:
@@ -84,7 +87,7 @@ retvalue(ffi_type *type, V *x)
 	case FFI_TYPE_FLOAT:   R ke(*(E*)x);
 	case FFI_TYPE_DOUBLE:  R kf(*(F*)x);
 	}
-	R null();
+	R (K)0;
 }
 
 ZK
@@ -127,6 +130,8 @@ gettype(H t)
 	case -KV:
 	case -KT:
 	case -KI: R &ffi_type_sint32;
+	case -KP:
+	case -KN:
 	case -KJ: R &ffi_type_sint64;
 	case -KE: R &ffi_type_float;
 	case -KZ:
@@ -256,10 +261,18 @@ freeclosure(V* p)
 	free(pcl);
 }
 
+Z I ktype(I t){
+	Z C ts[] = "kb  xhijefcs mdz uvtC";
+	C*p;
+	if((p=strchr(ts,t))){
+		return ts-p;
+	}
+	return -128;
+}
+
 Z K2(cf) /* simple call: f|(r;f),args */
 {
 	K r;
-	Z char t[] = "kb  xhijefcs mdz uvtC";
 	ffi_cif cif;
 	ffi_type **types;
 	ffi_status rc;
@@ -272,16 +285,15 @@ Z K2(cf) /* simple call: f|(r;f),args */
 		char *p;
 		if (xn != 2 || xK[0]->t != -KC)
 			R krr("type");
-		if ((p=strchr(t, xK[0]->g)))
-			rt = t - p;
-		else
-			R krr("type");
+		rt = ktype(kK(x)[0]->g);
+		if(rt==-128)
+			return krr("type");
 		if (xK[1]->t == -KS) {
 			f = xK[1]->s;
 			handle = RTLD_DEFAULT;
 		}
 		else if (xK[1]->t == KS && xK[1]->n == 2) {
-			handle = dlopen(kS(xK[1])[0], RTLD_NOW);
+			handle = dlopen(kS(xK[1])[0], RTLD_LAZY);
 			if (!handle)
 				R krr(dlerror());
 			f = kS(xK[1])[1];
@@ -356,7 +368,8 @@ Z K2(cf) /* simple call: f|(r;f),args */
 }
 
 K1(dump){fprintf(stderr,"%p: r=%d t=%hd u=%hd n=%d\n",
-		 x, xr, xt, xu, xt>0?xn:1); R null();}
+		 x, xr, xt, xu, xt>0?xn:1); R (K)0;}
+
 K2(kfn)
 {
 	V *func;
@@ -369,7 +382,15 @@ K2(kfn)
 	R dl(func, y->i);
 }
 
-#define N 6
+K1(ern){
+	I old = errno;
+	if(xt == -KI){
+		errno = x->i;
+	}
+	return ki(old);
+}
+
+#define N 7
 #define FFIQ_ENTRY(i, name, def) \
 	xS[i] = ss(name); kK(y)[i] = def
 #define FFIQ_FUNC(i, name, nargs) FFIQ_ENTRY(i, #name, dl(name, nargs))
@@ -383,6 +404,7 @@ K1(ffi)
 	FFIQ_FUNC(3, cf,  2);
 	FFIQ_FUNC(4, dump,  1);
 	FFIQ_FUNC(5, kfn, 2);
+	FFIQ_FUNC(6, ern, 1);
 	R xD(x,y);
 }
 
