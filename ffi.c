@@ -232,14 +232,16 @@ ZV*
 getclosure(K x, V**p)
 {
 	ffi_status rc;
-	ffi_closure *pcl = malloc(sizeof(ffi_closure));
-	ffi_cif   *cif = malloc(sizeof(ffi_cif));
+	void* boundf;
+	ffi_closure *pcl = ffi_closure_alloc(sizeof(ffi_closure),&boundf);
+	ffi_cif *cif = malloc(sizeof(ffi_cif));
 	I n = xK[1]->n;
-	ffi_type  **types = malloc(sizeof(ffi_type*)*n);
+	ffi_type  **types;
+	types = malloc(sizeof(ffi_type*)*n);
 	DO(n, types[i] = chartotype(kC(xK[1])[i]));
 	rc = ffi_prep_cif(cif, FFI_DEFAULT_ABI, n, &ffi_type_pointer, types);
 	assert(rc == FFI_OK);
-	rc = ffi_prep_closure(pcl, cif, closurefunc, r1(x)); 
+	rc = ffi_prep_closure_loc(pcl, cif, closurefunc, r1(x),boundf); 
 	assert(rc == FFI_OK);
 
 	R pcl;
