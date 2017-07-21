@@ -25,7 +25,10 @@ if[res=-1;show (`pipe_write_error;.ffi.errno[])];
 // Callbacks
 cmp:{0N!x,y;(x>y)-x<y} 
 x:3 1 2i
-.ffi.cf[(" ";`qsort)]0N!(x;count x;4;(cmp;"II")) 
+.ffi.cf[(" ";`qsort)](x;count x;4;(cmp;"II"))
+x:2 2 -1i
+.ffi.cf[(" ";`qsort)](x;count x;4;(cmp;"II";"i"))
+
 
 x:`c`a`b;
 .ffi.cf[(" ";`qsort)](x;count x;8;(cmp;"SS")) 

@@ -1,4 +1,3 @@
-/* -*- mode: c; c-basic-offset: 8 -*- */
 #include <dlfcn.h>
 #include <errno.h>
 #include <stdio.h>
@@ -9,12 +8,6 @@
 #include <ctype.h>
 
 #include "k.h"
-
-ZK null() {
-  K x= ka(101);
-  xi= 0;
-  R x;
-}
 
 Z ffi_type *chartotype(G c) {
   switch(tolower(c)) {
@@ -151,7 +144,7 @@ Z ffi_type *gettype(H t) {
     R &ffi_type_double;
   case -KS:
     R &ffi_type_pointer;
-  case -UU:
+  case -3:
     R &ffi_type_void;
   }
   R &ffi_type_pointer;
@@ -210,6 +203,10 @@ ZV closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
 
   K r= dot(kK((K) userdata)[0], x);
   r0(x);
+  if(cif->rtype != &ffi_type_void)
+    memset(resp, 0, cif->rtype->size);
+  if(!r)
+    return; // error occured during callback from c
   switch(r->t) {
   case -KB:
   case -KG:
@@ -243,8 +240,10 @@ ZV closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   r0(r);
 }
 
+// x is (func;atypes) or (func;atypes;rtype) - similar to cif
 ZV *getclosure(K x, V **p) {
   ffi_status rc;
+  ffi_type *rtype= &ffi_type_pointer;
   void *boundf;
   ffi_closure *pcl= ffi_closure_alloc(sizeof(ffi_closure), &boundf);
   ffi_cif *cif= malloc(sizeof(ffi_cif));
@@ -252,7 +251,9 @@ ZV *getclosure(K x, V **p) {
   ffi_type **types;
   types= malloc(sizeof(ffi_type *) * n);
   DO(n, types[i]= chartotype(kC(xK[1])[i]));
-  rc= ffi_prep_cif(cif, FFI_DEFAULT_ABI, n, &ffi_type_pointer, types);
+  if(xn > 2)
+    rtype= chartotype(xK[2]->g);
+  rc= ffi_prep_cif(cif, FFI_DEFAULT_ABI, n, rtype, types);
   assert(rc == FFI_OK);
   rc= ffi_prep_closure_loc(pcl, cif, closurefunc, r1(x), boundf);
   assert(rc == FFI_OK);
@@ -268,12 +269,51 @@ ZV freeclosure(V *p) {
 }
 
 Z I ktype(I t) {
-  Z C ts[]= "kb  xhijefcs mdz uvtC";
+  Z C ts[]= "kbg xhijefcs mdz uvtC";
   C *p;
   if((p= strchr(ts, t))) {
     return ts - p;
   }
   return -128;
+}
+
+Z K kvalue(I t, void *ret) {
+  K r;
+  if(t == 0)
+    R *(K *) ret;
+  if(t == -3)
+    R(K) 0;
+  if(t == -20) {
+    char *rs= *(char **) ret;
+    r= ktn(KC, 1 + strlen(rs));
+    memcpy(kG(r), rs, r->n);
+    R r;
+  }
+  r= ka(t);
+  switch(t) {
+  case -KB:
+  case -KG:
+    R r->g= *(G *) ret, r;
+  case -KH:
+    R r->h= *(H *) ret, r;
+  case -KM:
+  case -KD:
+  case -KU:
+  case -KV:
+  case -KT:
+  case -KI:
+    R r->i= *(I *) ret, r;
+  case -KJ:
+    R r->j= *(J *) ret, r;
+  case -KE:
+    R r->e= *(E *) ret, r;
+  case -KZ:
+  case -KF:
+    R r->f= *(F *) ret, r;
+  case -KS:
+    R r->s= ss(*(S *) ret), r;
+  }
+  R krr("rtype");
 }
 
 Z K2(cf) /* simple call: f|(r;f),args */
@@ -287,6 +327,10 @@ Z K2(cf) /* simple call: f|(r;f),args */
   I i, n; /* args count */
   void *handle, *func, **values, **pvalues;
   char ret[FFI_SIZEOF_ARG];
+  if(y->t != 0)
+    return krr("type: args should be generic list");
+  if(x->t != 0 && x->t != -KS)
+    return krr("type: func should be sym or generic list");
   if(xt == 0) {
     char *p;
     if(xn != 2 || xK[0]->t != -KC)
@@ -308,10 +352,7 @@ Z K2(cf) /* simple call: f|(r;f),args */
     rt= -KI;
     f= xs;
     handle= RTLD_DEFAULT;
-  } else
-    R krr("type");
-  if(y->t != 0)
-    R krr("type");
+  }
   n= y->n;
   dlerror(); /* Clear any existing error */
   func= dlsym(handle, f);
@@ -338,47 +379,7 @@ Z K2(cf) /* simple call: f|(r;f),args */
     dlclose(handle);
   if(FFI_OK != rc)
     R krr("prep");
-  if(rt == 0)
-    R *(K *) ret;
-  if(rt == -2)
-    R null();
-  if(rt == -20) {
-    char *rs= *(char **) ret;
-    r= ktn(KC, 1 + strlen(rs));
-    memcpy(kG(r), rs, r->n);
-    R r;
-  }
-  r= ka(rt);
-  switch(rt) {
-  case -KB:
-  case -KG:
-    R r->g= *(G *) ret, r;
-  case -KH:
-    R r->h= *(H *) ret, r;
-  case -KM:
-  case -KD:
-  case -KU:
-  case -KV:
-  case -KT:
-  case -KI:
-    R r->i= *(I *) ret, r;
-  case -KJ:
-    R r->j= *(J *) ret, r;
-  case -KE:
-    R r->e= *(E *) ret, r;
-  case -KZ:
-  case -KF:
-    R r->f= *(F *) ret, r;
-  case -KS:
-    R r->s= ss(*(S *) ret), r;
-  }
-  R krr("rtype");
-}
-
-K1(dump) {
-  fprintf(stderr, "%p: r=%d t=%hd u=%hd n=%d\n", x, xr, xt, xu,
-          xt > 0 ? xn : 1);
-  R(K) 0;
+  return kvalue(rt, ret);
 }
 
 K2(kfn) {
@@ -400,7 +401,7 @@ K1(ern) {
   return ki(old);
 }
 
-#define N 7
+#define N 6
 #define FFIQ_ENTRY(i, name, def)                                               \
   xS[i]= ss(name);                                                             \
   kK(y)[i]= def
@@ -409,12 +410,11 @@ K1(ern) {
 K1(ffi) {
   K y= ktn(0, N);
   x= ktn(KS, N);
-  FFIQ_ENTRY(0, "", null());
+  FFIQ_ENTRY(0, "", k(0, "::", (K) 0));
   FFIQ_FUNC(1, cif, 2);
   FFIQ_FUNC(2, call, 3);
   FFIQ_FUNC(3, cf, 2);
-  FFIQ_FUNC(4, dump, 1);
-  FFIQ_FUNC(5, kfn, 2);
-  FFIQ_FUNC(6, ern, 1);
+  FFIQ_FUNC(4, kfn, 2);
+  FFIQ_FUNC(5, ern, 1);
   R xD(x, y);
 }
