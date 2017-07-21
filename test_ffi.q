@@ -14,7 +14,7 @@ puts_cif:.ffi.cif[(),"s";"i"]
 .ffi.call[.ffi.cif["si";"i"];`printf]("Hello %d\n\000";42)
 
 //register func on handle
-r:{b:20#"\000";n:cf[`read](x;b;20);if[n=-1;show(`pipe_read_error;.ffi.errno[])];read::0N!n#b;0}
+r:{b:20#"\000";n:.ffi.cf[`read](x;b;20);if[n=-1;show(`pipe_read_error;.ffi.errno[])];read::0N!n#b;0}
 pipe:0 0i;
 res:.ffi.cf[`pipe](pipe;(::))
 if[res=-1;show (`pipe_write_error;.ffi.errno[])];
