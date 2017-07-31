@@ -1,6 +1,51 @@
 # Foreign Function Interface for Q 
 
-Examples
+`ffiq` is an extension to kdb+ for loading and calling dynamic libraries using pure `q`. It can be used to create bindings to other libraries or utilise OS functionality without writing any C code.
+
+***DANGER*** Although you don't need to write C code, you do need to know what you are doing. You can easily crash kdb+ process or corrupt in-memory data structures without any hope to find out what has happened. You would not get any support for crashes caused by use of this library.
+
+## Requirements
+ - Linux, macOS
+ - libffi (see installation instructions below)
+ - Latest kdb+
+
+### Installation
+On Ubuntu 
+```
+sudo apt-get install libffi-dev
+```
+On masOS
+```
+brew install libffi     // at the time of writing is libffi 3.2.1
+```
+To install MKL go ahead to https://software.intel.com/en-us/mkl
+```
+/opt/intel/mkl/bin/mklvars.sh intel64
+```
+
+On Windows
+Use NuGet(https://www.nuget.org/packages/libffi/)
+```
+nuget install libffi
+```
+
+## API
+
+ffiq exposes several functions in `.ffi` namespace
+
+`cf` - call function
+`cif` - prepare argument and return types to be used in `call`
+`call` - call function using prepared types by `cif` with arguments provided
+`bind` - create projection with function resolved to call with arguments
+`errno` - return current `errno` global on *nix OS
+`kfn` - bind function which returns and accepts K objects in current process. Similar to `2:`
+
+Arguments to to call with should be passed as generic list to `cf`, `call` and function created by `bind`.
+
+`cf` and `call` performs native function loading and resolution at the time of call which created significant overhead. Use `bind` to perform this steps in advance and reduce runtime overhead.
+
+
+## Examples
 ```
 q)\l ffi.q / populates .ffi namespace
 q).ffi.cf[`strlen](`abc;::) / arguments should be passed as generic lists
@@ -19,7 +64,7 @@ q).ffi.cf[("h";`getppid)]() / specify return type, no args
 q).ffi.cf[("e";`libm.so`powf)]2 2e,(::) / explicit library
 4e
 ```
-BLAS - all arguments should be lists
+### BLAS - all arguments should be lists
 ```
 q)x:10#2f;.ffi.cf[("f";`libblas.so`ddot_)](list count x; x;list 1;x;list 1)
 40f
@@ -27,7 +72,7 @@ q).ffi.cf[(" ";`libblas.so`daxpy_)](list count x;list 2f; x;list 1;x;list 1)
 q)x / <- a*x+y, a=x=y=2
 6 6 6 6 6 6 6 6 6 6f
 ```
-Callbacks
+### Callbacks
 ```
 q)cmp:{0N!x,y;(x>y)-x<y} 
 q)x:3 1 2;.ffi.cf[(" ";`qsort)](x;3;4;(cmp;"II")) 
@@ -49,3 +94,8 @@ r:{b:20#"\000";n:.ffi.cf[`read](x;b;20);0N!n#b;0}
 cf[`sd1](h;(r;(),"i")) / start handler
 cf[`sd0](h;::)          / stop handler
 ```
+
+
+- - - - - - - - -
+### Notes
+This version is based on original [ffiq](https://github.com/enlnt/ffiq) created by @abalkin
