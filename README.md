@@ -13,6 +13,7 @@
 On Ubuntu 
 ```
 sudo apt-get install libffi-dev
+sudo apt install libffi-dev:i386 # to install 32bit version on 64bit OS
 ```
 On masOS
 ```
