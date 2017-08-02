@@ -35,10 +35,15 @@ nuget install libffi
 ffiq exposes several functions in `.ffi` namespace
 
 `cf` - call function
+
 `cif` - prepare argument and return types to be used in `call`
+
 `call` - call function using prepared types by `cif` with arguments provided
+
 `bind` - create projection with function resolved to call with arguments
+
 `errno` - return current `errno` global on *nix OS
+
 `kfn` - bind function which returns and accepts K objects in current process. Similar to `2:`
 
 Arguments to to call with should be passed as generic list to `cf`, `call` and function created by `bind`.
