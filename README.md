@@ -50,9 +50,9 @@ Arguments to to call with should be passed as generic list to `cf`, `call` and f
 ```
 q)\l ffi.q / populates .ffi namespace
 q).ffi.cf[`strlen](`abc;::) / arguments should be passed as generic lists
-3
+3i
 q).ffi.cf[`strlen]("abc\000";::) / null-terminate q-strings
-3
+3i
 q)n:.ffi.cf[`printf]("%s %c %hd %d %ld %g\n\000";`test;"x";1h;2;3j;4f)
 test x 1 2 3 4
 q)b:n#"\000" / buffer
@@ -62,27 +62,29 @@ q)b
 
 q).ffi.cf[("h";`getppid)]() / specify return type, no args
 13615h
+// only Linux
 q).ffi.cf[("e";`libm.so`powf)]2 2e,(::) / explicit library
 4e
 ```
 ### BLAS - all arguments should be lists
 ```
-q)x:10#2f;.ffi.cf[("f";`libblas.so`ddot_)](list count x; x;list 1;x;list 1)
+q)x:10#2f;
+q).ffi.cf[("f";`libblas.so`ddot_)]((),count x; x;(),1;x;(),1)
 40f
-q).ffi.cf[(" ";`libblas.so`daxpy_)](list count x;list 2f; x;list 1;x;list 1)
+q).ffi.cf[(" ";`libblas.so`daxpy_)]((),count x;(),2f; x;(),1;x;(),1)
 q)x / <- a*x+y, a=x=y=2
 6 6 6 6 6 6 6 6 6 6f
 ```
 ### Callbacks
 ```
 q)cmp:{0N!x,y;(x>y)-x<y} 
-q)x:3 1 2;.ffi.cf[(" ";`qsort)](x;3;4;(cmp;"II")) 
+q)x:3 1 2i;.ffi.cf[(" ";`qsort)](x;3i;4i;(cmp;"II";"i")) 
 1 2
 3 1
 3 2
 q)x
-1 2 3
-q)x:`c`a`b;.ffi.cf[(" ";`qsort)](x;3;8;(cmp;"SS")) 
+1 2 3i
+q)x:`c`a`b;.ffi.cf[(" ";`qsort)](x;3i;8i;(cmp;"SS";"i")) 
 `a`b
 `c`a
 `c`b
@@ -91,6 +93,7 @@ q)x
 ```
 Register a callback on a handle
 ```
+// h is handle to some other process
 r:{b:20#"\000";n:.ffi.cf[`read](x;b;20);0N!n#b;0}
 cf[`sd1](h;(r;(),"i")) / start handler
 cf[`sd0](h;::)          / stop handler
