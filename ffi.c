@@ -11,6 +11,15 @@
 #include "k.h"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+#define VD -3   // void
+#define KR -127 // raw pointer
+#define ER -128 // error
+
+/*
+' ' - void for return types
+'r' - for raw pointer(stored in kG)
+*/
+
 Z ffi_type *chartotype(C c) {
   switch(tolower(c)) {
   case 'b':
@@ -25,9 +34,11 @@ Z ffi_type *chartotype(C c) {
     R &ffi_type_sint64;
   case 'e':
     R &ffi_type_float;
+  case ' ':
+    R &ffi_type_void; // valid only for return types
   case 'f':
     R &ffi_type_double;
-  case 'p':
+  case 'r':
   case 'k':
   case 'g':
   case 's':
@@ -60,12 +71,14 @@ Z ffi_type *gettype(H t) {
   case -KF:
     R &ffi_type_double;
   case -KS:
+  case -UU:
     R &ffi_type_pointer;
-  case -3:
+  case VD:
     R &ffi_type_void;
   }
   R &ffi_type_pointer;
 }
+
 Z K retvalue(ffi_type *type, V *x) {
   switch(type->type) {
   case FFI_TYPE_VOID:
@@ -99,14 +112,14 @@ Z I ktype(C t) {
   }
   if((p= strchr(ts, tolower(t))))
     return -(ts - p);
-  return -128;
+  return ER;
 }
 
 Z K kvalue(I t, void *ret) {
   K r;
   if(t == 0)
     R *(K *) ret;
-  if(t == -3)
+  if(t == VD)
     R(K) 0;
   if(t == KC) {
     char *rs= *(char **) ret;
@@ -156,10 +169,11 @@ Z K cif(K x, K y) /* atypes, rtype */
     R krr("cif1: argtypes");
   if(y->t != -KC)
     R krr("cif2: rtype");
-  r= ktn(0, 3); /* cif,atypes,rtype */
+  r= ktn(0, 4); /* cif,ffi_atypes,atypes, rtype */
   pcif= (ffi_cif *) kG(kK(r)[0]= ktn(KG, sizeof(ffi_cif)));
-  atypes= (ffi_type **) kG((kK(r)[1]= ktn(KG, x->n * sizeof(V *))));
-  kK(r)[2]= r1(y);
+  atypes= (ffi_type **) kG((kK(r)[1]= ktn(KG, x->n * sizeof(ffi_type *))));
+  kK(r)[2]= r1(x);
+  kK(r)[3]= r1(y);
   DO(x->n, atypes[i]= chartotype(kC(x)[i]));
   switch(ffi_prep_cif(pcif, FFI_DEFAULT_ABI, x->n, chartotype(y->g), atypes)) {
   case FFI_OK:
@@ -174,13 +188,14 @@ Z K cif(K x, K y) /* atypes, rtype */
 
 Z V *getclosure(K x, V **p);
 
-Z V *getvalue(K x, V **p) {
-  if(x->t < 0)
+Z V *getvalue(I t, K x, V **p) {
+  t = x->t;
+  if(t < 0)
     R(V *) & x->g;
-  if(x->t == 0)
+  if(t == 0)
     *p= getclosure(x, p);
-  else if(x->t <= KT)
-    *p= xG;
+  else if(t <= KT)
+    *p= kG(x);
   else
     *p= x;
   R(V *) p;
@@ -214,48 +229,51 @@ void *lookupFunc(K x) {
   }
   return func;
 }
+
 // [func;atypes;rtype]
 Z K bind(K f, K a, K r) {
   K bound= cif(a, r), fp;
   if(!bound)
-    return (K) 0;
+    R(K) 0;
   void *func= lookupFunc(f);
   if(!func)
     R r0(bound), (K) 0;
-  fp= ks("");
-  jk(&bound, fp);
-  fp->s= func;
-  R k(0, ".ffi.call", r1(bound), ks(""), (K) 0);
+  fp= ktn(KG, sizeof(V *));
+  memcpy(kG(fp), &func, fp->n);
+  R k(0, ".ffi.call", bound, fp, (K) 0);
 }
 
 Z K call(K x, K y, K z) /*cif,func,values*/
 {
   char ret[FFI_SIZEOF_ARG];
   ffi_cif *pcif;
-  void *func;
-  void **values, **pvalues;
+  void *func, **values, **pvalues;
+  I argc, rt;
   if(x->t != 0 || x->n < 2)
     R krr("ciftype");
-  if(y->t != -KS)
+  if(y->t != -KS && y->t != KG)
     R krr("functype");
   if(z->t != 0)
     R krr("argtype");
   pcif= (ffi_cif *) kG(kK(x)[0]);
   if(pcif->abi != FFI_DEFAULT_ABI)
     R krr("abi");
-  if(x->n > 3)
-    func= kK(x)[3]->s;
+  if(y->t == KG)
+    func= *(V **) kG(y);
   else
     func= lookupFunc(y);
   if(!func)
     R(K) 0;
-  values= malloc(sizeof(V *) * z->n);
-  pvalues= malloc(sizeof(V *) * z->n);
-  DO(z->n, values[i]= getvalue(kK(z)[i], &pvalues[i]));
+  argc= MIN(z->n,
+            pcif->nargs); // min of passed args and number of argtypes in cif
+  rt= ktype(kK(x)[3]->g);
+  values= malloc(sizeof(V *) * argc);
+  pvalues= malloc(sizeof(V *) * argc);
+  DO(argc, values[i]= getvalue(ktype(kC(kK(x)[2])[i]), kK(z)[i], &pvalues[i]));
   ffi_call(pcif, func, &ret, values);
   free(pvalues);
   free(values);
-  R kvalue(ktype(kK(x)[2]->g), ret); // retvalue(pcif->rtype, ret);
+  R kvalue(rt, ret); // retvalue(pcif->rtype, ret);
 }
 
 Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
@@ -281,7 +299,7 @@ Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
 // x is (func;atypes) or (func;atypes;rtype) - similar to cif
 Z V *getclosure(K x, V **p) {
   ffi_status rc;
-  ffi_type *rtype= &ffi_type_pointer;
+  ffi_type *rtype= &ffi_type_void;
   void *boundf;
   ffi_closure *pcl= ffi_closure_alloc(sizeof(ffi_closure), &boundf);
   ffi_cif *cif= malloc(sizeof(ffi_cif));
@@ -312,14 +330,12 @@ free(pcl);
 
 Z K cf(K x, K y) /* simple call: f|(r;f),args */
 {
-  K r;
   ffi_cif cif;
   ffi_type **types;
   ffi_status rc;
-  char *f;
   H rt;   /* return type */
   I i, n; /* args count */
-  void *handle, *func, **values, **pvalues;
+  void *func= NULL, **values, **pvalues;
   char ret[FFI_SIZEOF_ARG];
   if(y->t != 0)
     return krr("type: args should be generic list");
@@ -327,11 +343,10 @@ Z K cf(K x, K y) /* simple call: f|(r;f),args */
   if(x->t != 0 && x->t != -KS)
     return krr("type: func should be sym or generic list");
   if(x->t == 0) {
-    char *p;
     if(x->n != 2 || kK(x)[0]->t != -KC)
       R krr("type");
     rt= ktype(kK(x)[0]->g);
-    if(rt == -128)
+    if(rt == ER)
       return krr("type");
     func= lookupFunc(kK(x)[1]);
   } else if(x->t == -KS) {
@@ -345,7 +360,7 @@ Z K cf(K x, K y) /* simple call: f|(r;f),args */
   pvalues= calloc(n, sizeof(V *));
   for(i= 0; i != n; ++i) {
     types[i]= gettype(kK(y)[i]->t);
-    values[i]= getvalue(kK(y)[i], &pvalues[i]);
+    values[i]= getvalue(kK(y)[i]->t, kK(y)[i], &pvalues[i]);
   }
   rc= ffi_prep_cif(&cif, FFI_DEFAULT_ABI, n, gettype(rt), types);
   if(FFI_OK == rc)
@@ -364,7 +379,7 @@ Z K cf(K x, K y) /* simple call: f|(r;f),args */
 
 K kfn(K x, K y) {
   V *func;
-  if(x->t != -KS || y->t != -KI && y->t != -KJ)
+  if(x->t != -KS || (y->t != -KI && y->t != -KJ))
     R krr("type");
   func= lookupFunc(x);
   if(!func)
@@ -380,21 +395,13 @@ K ern(K x) {
   return ki(old);
 }
 
-K deref1(K x) {
-  if(x->t != -KJ)
-    return krr("type");
-  if(!x->j)
-    return krr("deref null");
-  return kj((J) * (V **) x->j);
-}
-
 K deref(K x) {
   K r;
   if(x->t != KG)
     return krr("type");
-  if(x->n < sizeof(K))
+  if(x->n < sizeof(V *))
     return krr("length: too small");
-  if(!*(G **) kG(x))
+  if(!*(V **) kG(x))
     return krr("deref null");
   r= ktn(KG, x->n);
   memcpy(kG(r), *(V **) kG(x), r->n);

@@ -14,6 +14,6 @@ kfn0:{[sym;nargs]kfn[sym;nargs]}
 errno:{ern x}
 // dereference pointer to another pointer
 deref0:{deref x}
-nil:8#0x0
+nil:$[.z.o like "?32";4;8]#0x0
 \d .
 
