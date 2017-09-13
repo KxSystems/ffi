@@ -3,7 +3,7 @@
 // prepare calling interface with arg_types and return type 
 cif0:{[arg_types;ret_type] cif[args_types;ret_type]}
 // bind function - similar to cif, but performs lookup in advance
-bind0:{[func;arg_types;ret_type] bind[func;arg_types;ret_type]} 
+bind:{[func;arg_types;ret_type] bindf[func;arg_types;ret_type]} 
 // call prepared cif with values
 call0:{[cif;func;vals]call[cif;func;vals]}
 // simple call: f|(r;f),args */

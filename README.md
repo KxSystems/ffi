@@ -19,7 +19,7 @@ On masOS
 ```
 brew install libffi     // at the time of writing is libffi 3.2.1
 ```
-To install MKL go ahead to https://software.intel.com/en-us/mkl
+Optional: To install MKL go ahead to https://software.intel.com/en-us/mkl
 ```
 /opt/intel/mkl/bin/mklvars.sh intel64
 ```
@@ -27,7 +27,9 @@ To install MKL go ahead to https://software.intel.com/en-us/mkl
 On Windows
 Use NuGet(https://www.nuget.org/packages/libffi/)
 ```
-nuget install libffi
+nuget restore
+wget https://github.com/KxSystems/kdb/raw/master/w64/q.lib -O w64/q.lib
+wget https://github.com/KxSystems/kdb/raw/master/w32/q.lib -O w32/q.lib
 ```
 
 ## API

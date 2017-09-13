@@ -1,13 +1,28 @@
 #include <assert.h>
 #include <ctype.h>
+#ifndef _WIN32
 #include <dlfcn.h>
+#else
+#include <windows.h>
+#define RTLD_NOW 0
+#define RTLD_DEFAULT 0
+#define RTLD_NODELETE 0
+//TODO: use dlfcn(https://github.com/dlfcn-win32/dlfcn-win32) direct or via vcpkg
+void*dlsym(void*d,char* s){return GetProcAddress(d,s);}
+void*dlopen(char* s,int f){return LoadLibrary(s);}
+char*dlerror(){return "";}
+#endif
 #include <errno.h>
 #include <ffi.h>
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if ((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)) )
+#define snprintf sprintf_s
+#endif
 
+#define KXVER 3
 #include "k.h"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -231,11 +246,11 @@ void *lookupFunc(K x) {
 }
 
 // [func;atypes;rtype]
-Z K bind(K f, K a, K r) {
-  K bound= cif(a, r), fp;
+Z K bindf(K f, K a, K r) {
+  K bound= cif(a, r), fp;void *func;
   if(!bound)
     R(K) 0;
-  void *func= lookupFunc(f);
+  func= lookupFunc(f);
   if(!func)
     R r0(bound), (K) 0;
   fp= ktn(KG, sizeof(V *));
@@ -278,12 +293,11 @@ Z K call(K x, K y, K z) /*cif,func,values*/
 
 Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   I i, n= cif->nargs, sz;
-  K x= ktn(0, n);
-  K t= kK((K) userdata)[1];
+  K x= ktn(0, n),r,t= kK((K) userdata)[1];
   for(i= 0; i != n; ++i) {
     kK(x)[i]= kvalue(ktype(kC(t)[i]), args[i]);
   }
-  K r= dot(kK((K) userdata)[0], x);
+  r= dot(kK((K) userdata)[0], x);
   r0(x);
   if(cif->rtype != &ffi_type_void)
     memset(resp, 0, cif->rtype->size);
@@ -419,7 +433,7 @@ K ffi(K x) {
   x= ktn(KS, N);
   FFIQ_ENTRY(0, "", k(0, "::", (K) 0));
   FFIQ_FUNC(1, cif, 2);
-  FFIQ_FUNC(2, bind, 3);
+  FFIQ_FUNC(2, bindf, 3);
   FFIQ_FUNC(3, call, 3);
   FFIQ_FUNC(4, cf, 2);
   FFIQ_FUNC(5, kfn, 2);
