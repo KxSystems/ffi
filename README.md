@@ -62,15 +62,18 @@ nmake /fwin\Makefile w64
 
 ## API
 
-ffiq exposes several functions in `.ffi` namespace
+ffiq exposes 2 main functions in `.ffi` namespace.
 
-`cf` - call function
+`cf` - call function. Useful for one off calls.
+
+`bind` - create projection with function resolved to call with arguments. Useful for multiple calls to C lib.
+
+
+Some additional utility functions are provided as well:
 
 `cif` - prepare argument and return types to be used in `call`
 
 `call` - call function using prepared types by `cif` with arguments provided
-
-`bind` - create projection with function resolved to call with arguments
 
 `errno` - return current `errno` global on \*nix OS
 
