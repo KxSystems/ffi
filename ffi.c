@@ -1,25 +1,18 @@
 #include <assert.h>
 #include <ctype.h>
-#ifndef _WIN32
 #include <dlfcn.h>
-#else
-#include <windows.h>
-#define RTLD_NOW 0
-#define RTLD_DEFAULT 0
-#define RTLD_NODELETE 0
-//TODO: use dlfcn(https://github.com/dlfcn-win32/dlfcn-win32) direct or via vcpkg
-void*dlsym(void*d,char* s){return GetProcAddress(d,s);}
-void*dlopen(char* s,int f){return LoadLibrary(s);}
-char*dlerror(){return "";}
-#endif
 #include <errno.h>
 #include <ffi.h>
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if ((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)) )
+#if((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)))
 #define snprintf sprintf_s
+#define EXP __declspec(dllexport)
+#define RTLD_NODELETE 0
+#else
+#define EXP
 #endif
 
 #define KXVER 3
@@ -194,17 +187,17 @@ Z K cif(K x, K y) /* atypes, rtype */
   case FFI_OK:
     R r;
   case FFI_BAD_TYPEDEF:
-    R r0(r), krr("FFI_BAD_TYPEDEF");
+    R r0(r), krr("prep_cif: FFI_BAD_TYPEDEF");
   case FFI_BAD_ABI:
-    R r0(r), krr("FFI_BAD_ABI");
+    R r0(r), krr("prep_cif: FFI_BAD_ABI");
   }
-  R krr("prep_cif");
+  R r0(r),krr("prep_cif: unknown");
 }
 
 Z V *getclosure(K x, V **p);
 
 Z V *getvalue(I t, K x, V **p) {
-  t = x->t;
+  t= x->t;
   if(t < 0)
     R(V *) & x->g;
   if(t == 0)
@@ -246,8 +239,9 @@ void *lookupFunc(K x) {
 }
 
 // [func;atypes;rtype]
-Z K bindf(K f, K a, K r) {
-  K bound= cif(a, r), fp;void *func;
+EXP K bindf(K f, K a, K r) {
+  K bound= cif(a, r), fp;
+  void *func;
   if(!bound)
     R(K) 0;
   func= lookupFunc(f);
@@ -258,7 +252,7 @@ Z K bindf(K f, K a, K r) {
   R k(0, ".ffi.call", bound, fp, (K) 0);
 }
 
-Z K call(K x, K y, K z) /*cif,func,values*/
+EXP K call(K x, K y, K z) /*cif,func,values*/
 {
   char ret[FFI_SIZEOF_ARG];
   ffi_cif *pcif;
@@ -293,7 +287,7 @@ Z K call(K x, K y, K z) /*cif,func,values*/
 
 Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   I i, n= cif->nargs, sz;
-  K x= ktn(0, n),r,t= kK((K) userdata)[1];
+  K x= ktn(0, n), r, t= kK((K) userdata)[1];
   for(i= 0; i != n; ++i) {
     kK(x)[i]= kvalue(ktype(kC(t)[i]), args[i]);
   }
@@ -342,7 +336,7 @@ free(pcl);
 */
 }
 
-Z K cf(K x, K y) /* simple call: f|(r;f),args */
+EXP K cf(K x, K y) /* simple call: f|(r;f),args */
 {
   ffi_cif cif;
   ffi_type **types;
@@ -387,11 +381,11 @@ Z K cf(K x, K y) /* simple call: f|(r;f),args */
   free(values);
   free(types);
   if(FFI_OK != rc)
-    R krr("prep");
+    R krr(rc==FFI_BAD_TYPEDEF?"prep: FFI_BAD_TYPEDEF":"prep: FFI_BAD_ABI");
   return kvalue(rt, ret);
 }
 
-K kfn(K x, K y) {
+EXP K kfn(K x, K y) {
   V *func;
   if(x->t != -KS || (y->t != -KI && y->t != -KJ))
     R krr("type");
@@ -401,7 +395,7 @@ K kfn(K x, K y) {
   R dl(func, -KJ == y->t ? y->j : y->i);
 }
 
-K ern(K x) {
+EXP K ern(K x) {
   I old= errno;
   if(x->t == -KI) {
     errno= x->i;
@@ -409,7 +403,7 @@ K ern(K x) {
   return ki(old);
 }
 
-K deref(K x) {
+EXP K deref(K x) {
   K r;
   if(x->t != KG)
     return krr("type");
@@ -428,7 +422,7 @@ K deref(K x) {
   kK(y)[i]= def
 #define FFIQ_FUNC(i, name, nargs) FFIQ_ENTRY(i, #name, dl(name, nargs))
 #define FFIQ_ENUM(i, name) FFIQ_ENTRY(i, #name, ki(name))
-K ffi(K x) {
+EXP K ffi(K x) {
   K y= ktn(0, N);
   x= ktn(KS, N);
   FFIQ_ENTRY(0, "", k(0, "::", (K) 0));

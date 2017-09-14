@@ -1,0 +1,12 @@
+x86-windows-static/
+x86-windows-static/debug/
+x86-windows-static/debug/lib/
+x86-windows-static/debug/lib/libffi.lib
+x86-windows-static/include/
+x86-windows-static/include/ffi.h
+x86-windows-static/include/ffitarget.h
+x86-windows-static/lib/
+x86-windows-static/lib/libffi.lib
+x86-windows-static/share/
+x86-windows-static/share/libffi/
+x86-windows-static/share/libffi/copyright

@@ -1,4 +1,5 @@
 \l ffi.q
+if[.z.o like "w??";show "Use test_win.q on Windows.";exit 1;];
 .ffi.cf[`puts]("test\000";::)
 .ffi.cf[`printf]("%s %d\n\000";`test;1)
 x: 80#"\000"

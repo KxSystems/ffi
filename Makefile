@@ -21,7 +21,5 @@ all:
 	$(CC) ffi.c $(FFI_INCLUDE) $(FFI_LIBS) $(OPTS) -o ffi.so
 all32:
 	$(CC) ffi.c $(FFI_INCLUDE) $(FFI_LIBS) $(OPTS) -o ffi.so -m32 
-w64:
-  cl /LD /MDd /verbose:lib /Ilib\libffi.3.2.1.1\build\native\include ffi.c w64\q.lib lib\libffi.3.2.1.1\build\native\lib\x64\v100\static\Debug\libffi.lib	
 fmt:
 	clang-format -style=file ffi.c -i
