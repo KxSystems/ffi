@@ -259,8 +259,6 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
   I argc, rt;
   if(x->t != 0 || x->n < 2)
     R krr("ciftype");
-  if(y->t != -KS && y->t != KG)
-    R krr("functype");
   if(z->t != 0)
     R krr("argtype");
   pcif= (ffi_cif *) kG(kK(x)[0]);
@@ -394,6 +392,19 @@ EXP K kfn(K x, K y) {
   R dl(func, -KJ == y->t ? y->j : y->i);
 }
 
+EXP K loadlib(K x){
+  V*handle;Z C err[256];
+  if(x->t!=-KS)
+    R krr("type");
+  // load all symbols to current process
+  handle=dlopen(x->s, RTLD_NOW | RTLD_NODELETE);
+  if(!handle) {
+      snprintf(err, sizeof(err), "loadlib: %s", dlerror());
+      R krr(err);
+  }
+  R (K)0;
+}
+
 EXP K ern(K x) {
   I old= errno;
   if(x->t == -KI) {
@@ -415,7 +426,7 @@ EXP K deref(K x) {
   return r;
 }
 
-#define N 8
+#define N 9
 #define FFIQ_ENTRY(i, name, def)                                               \
   kS(x)[i]= ss(name);                                                          \
   kK(y)[i]= def
@@ -432,5 +443,6 @@ EXP K ffi(K x) {
   FFIQ_FUNC(5, kfn, 2);
   FFIQ_FUNC(6, ern, 1);
   FFIQ_FUNC(7, deref, 1);
+  FFIQ_FUNC(8,loadlib,1);
   R xD(x, y);
 }
