@@ -1,0 +1,12 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+before_install:
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install libffi-dev libffi-dev:i386; else brew install libffi; fi
+
+script:
+  - make all
+  - if [ $TRAVIS_OS_NAME = linux ]; then make all32; fi

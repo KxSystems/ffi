@@ -1,0 +1,19 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+init:
+- cmd: 
+environment:
+  matrix:
+  - QARCH: w64
+    BITS: 64
+  - QARCH: w32
+    BITS: 32
+install:
+- cmd: >-
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars%BITS%.bat"
+
+    mkdir \projects\ffi\win\%QARCH%
+
+    appveyor-retry appveyor DownloadFile https://github.com/KxSystems/kdb/raw/master/%QARCH%/q.lib -FileName c:\projects\ffi\win\%QARCH%\q.lib
+build_script:
+- cmd: nmake /f win\Makefile %QARCH%

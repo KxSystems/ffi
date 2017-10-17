@@ -14,6 +14,8 @@ kfn0:{[sym;nargs]kfn[sym;nargs]}
 errno:{ern x}
 // dereference pointer to another pointer
 deref0:{deref x}
+// load
+load0:{loadlib x}
 nil:$[.z.o like "?32";4;8]#0x0
 \d .
 
