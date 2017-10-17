@@ -17,3 +17,10 @@ install:
     appveyor-retry appveyor DownloadFile https://github.com/KxSystems/kdb/raw/master/%QARCH%/q.lib -FileName c:\projects\ffi\win\%QARCH%\q.lib
 build_script:
 - cmd: nmake /f win\Makefile %QARCH%
+artifacts:
+- path: w32
+- path: w64
+- path: ffi.q
+- path: test_win.q
+- path: LICENSE
+- path: README.md
