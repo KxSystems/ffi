@@ -40,7 +40,7 @@ Note: that it is possible to compile ffiq with libffi provided by nuget(and usin
 On Linux and macOS
 
 ```
-make all   # default OS combo(x64)
+make all64   # default OS combo(x64)
 make all32 # compile as 32 bit libraries
 ```
 
@@ -49,7 +49,7 @@ Windows
 Make sure you use correct VisualC++ compiler version. `x86` for w32 and `x64` for w64.
 ```
 # to compile 32bit dll
-nmake /fwin\Makefile w32 
+nmake /fwin\Makefile all32 
 # to compile 64bit dll
-nmake /fwin\Makefile w64
+nmake /fwin\Makefile all64
 ```

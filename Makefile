@@ -15,7 +15,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 
-all:
+all64:
 	mkdir -p $(QP)64
 	$(CC) ffi.c $(FFI_INCLUDE) $(FFI_LIBS) $(OPTS) -o $(QP)64/ffi.so
 all32:
