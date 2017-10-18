@@ -1,13 +1,22 @@
 language: c
-
 os:
-  - linux
-  - osx
-
+- linux
+- osx
 before_install:
-  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install libffi-dev libc6-dev libc6-dev-i386 libffi-dev:i386; fi
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install libffi; fi
-
+- if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install libffi-dev libc6-dev libc6-dev-i386
+  libffi-dev:i386; fi
+- if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install libffi; fi
 script:
-  - make all64
-  - if [ $TRAVIS_OS_NAME = linux ]; then make all32; fi
+- make all64
+- if [ $TRAVIS_OS_NAME = linux ]; then make all32; fi
+- if [ $TRAVIS_OS_NAME = linux ]; then tar czvf ffi_lin.tar.gz l32 l64 ffi.q test_ffi.q README.md LICENSE; fi
+- if [ $TRAVIS_OS_NAME = osx ]; then tar czvf ffi_osx.tar.gz m64 ffi.q test_ffi.q README.md LICENSE; fi
+deploy:
+  provider: releases
+  api_key:
+    secure: 1faMYGwLHCCgNrdz+54RD0DQrEAwWs0bBPECEoyoxyFXqywLYe/hv/OPwG55gWwW56btKQDih8ywWNfnRSMLLUSWJykzDpB54gOeIzDg6yQrQUVz2YsFLBRxas8Kh8GUc1APt3hshpld0CpbANBXhUK9XLLa4QYpAjIS4ehq5sPMdoDDEhO2yE66wyLzEJTeGAbDix9oGomIJw8x0899BTt2iReZGW0+Wm9qwXWh3QwQ+AGZA6vj9/nrdp7AkMigNvkBaUEvFulaCqhIPxfbyFx0lyfqGtMcDuLZGuGvPpJI3tDZTAVf4GZ4EfU32M4JyeGTvMU3lyHxMo1MvcjPPK/rNR7TPAh5IIP3mk+fmUJLafc+M9EU+7TpRZaZ0RBhSbiYbAgy4AtAigyvR8tDRp9vNWzjfn/q+G9e0BsaTSl2BvwGUHhMmtPciUGB97Sbbl9k65ZZv4jpCnSAMT/2IIQDcsXzzE3gpKbnppN9Day1qWxPtCHJ+LJHpSOK8KMs8UEV7tPEDz7Tv6mAR58osjxMSZ0kTwWQxwT9xo9bBC72Tsnx5YJW/ZHbZX8MT2SOdW9LbZe4acc9iL/WRjEILQddFXqQoe6T8mTwfS0rXN8BR8BuyRFw/sZIEw75GV/vYFgTT/KqJClPy7C5W9MEJoGgchqJceUWoXz3285Ktd0=
+  file_glob: true
+  file: ffi_*.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true

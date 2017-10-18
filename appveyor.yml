@@ -15,10 +15,15 @@ install:
     appveyor-retry appveyor DownloadFile https://github.com/KxSystems/kdb/raw/master/w%BITS%/q.lib -FileName c:\projects\ffi\win\w%BITS%\q.lib
 build_script:
 - cmd: nmake /f win\Makefile all%BITS%
+after_build:
+- cmd: 7z a ffi_win%BITS%.zip %APPVEYOR_BUILD_FOLDER%\w%BITS% %APPVEYOR_BUILD_FOLDER%\ffi.q %APPVEYOR_BUILD_FOLDER%\test_win.q %APPVEYOR_BUILD_FOLDER%\LICENSE %APPVEYOR_BUILD_FOLDER%\README.md
 artifacts:
-- path: w32
-- path: w64
-- path: ffi.q
-- path: test_win.q
-- path: LICENSE
-- path: README.md
+- path: 'ffi_win*.zip'
+
+deploy:
+  provider: GitHub
+  draft: true
+  prerelease: true
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: true        # deploy on tag push only
