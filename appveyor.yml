@@ -12,12 +12,12 @@ install:
 
     mkdir \projects\ffi\win\w%BITS%
 
-    appveyor-retry appveyor DownloadFile https://github.com/KxSystems/kdb/raw/master/w%BITS%/q.lib -FileName c:\projects\ffi\win\w%BITS%\q.lib
+    appveyor-retry appveyor DownloadFile https://github.com/KxSystems/kdb/raw/master/w%BITS%/q.lib -FileName %APPVEYOR_BUILD_FOLDER%\win\w%BITS%\q.lib
 build_script:
 - cmd: nmake /f win\Makefile all%BITS%
 after_build:
 - cmd: mkdir ffi
-- ps: Copy-Item w%BITS% -Destination .\ffi\w%BITS%
+- ps: Copy-Item w$env:BITS -Destination .\ffi\w$env:BITS
 - ps: Copy-Item ffi.q test_win.q -Destination .\ffi
 - ps: Copy-Item LICENSE -Destination .\ffi\LICENSE.ffi
 - ps: Copy-Item README.md -Destination .\ffi\README.ffi

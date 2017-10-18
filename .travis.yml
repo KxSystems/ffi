@@ -9,8 +9,10 @@ before_install:
 script:
 - make all64
 - if [ $TRAVIS_OS_NAME = linux ]; then make all32; fi
+- echo "Preparing version $TRAVIS_BRANCH-$TRAVIS_COMMIT"
 - mkdir ffi; cp -r ffi.q test_ffi.q l32 l64 m64 ffi/; echo "$TRAVIS_BRANCH-$TRAVIS_COMMIT" > ffi/VERSION.ffi; cp LICENSE ffi/LICENSE.ffi; cp README.md ffi/README.ffi;
 - tar czvf ffi_$TRAVIS_OS_NAME-$TRAVIS_BRANCH.tar.gz ffi
+- echo "Packaged as ffi_$TRAVIS_OS_NAME-$TRAVIS_BRANCH.tar.gz"
 
 deploy:
   provider: releases
