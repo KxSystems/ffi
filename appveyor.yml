@@ -17,7 +17,7 @@ build_script:
 - cmd: nmake /f win\Makefile all%BITS%
 after_build:
 - cmd: mkdir ffi
-- ps: Copy-Item w$env:BITS -Destination .\ffi\w$env:BITS
+- ps: Copy-Item w$env:BITS -Destination .\ffi\w$env:BITS -Recurse
 - ps: Copy-Item ffi.q -Destination .\ffi
 - ps: Copy-Item test_win.q -Destination .\ffi
 - ps: Copy-Item LICENSE -Destination .\ffi\LICENSE.ffi
