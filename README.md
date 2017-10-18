@@ -34,11 +34,22 @@ Unpack content of the archive to `QHOME`(`c:\q` on Windows or `~/q` on Linux/mac
 
 ## API
 
-ffiq exposes 2 main functions in `.ffi` namespace.
+ffiq exposes 2 main functions in `.ffi` namespace. See `test_ffi.q` for detailed examples of usage.
 
-`cf` - call function. Useful for one off calls.
+### `cf` - call function
 
-`bind` - create projection with function resolved to call with arguments. Useful for multiple calls to C lib.
+Simple function call. Intended for one-off calls. Takes 2 arguments:
+
+1. function name(symbol) or list of return type char and function name.
+2. mixed list of arguments. Types of arguments passed to function are inferred from q types and should match width of arguments C function expects. If arguments are not mixed list, append `(::)` at the end.
+
+
+### `bind` - create projection with function resolved to call with arguments
+
+Prepare q function and bind it to provided C function for future calls. Useful for multiple calls to C lib. Takes 3 arguments:
+1. function name. Simple symbol or list of 2 symbols specifying library name.
+2. char array of argument types
+3. char with return type
 
 
 Some additional utility functions are provided as well:
@@ -105,8 +116,8 @@ Register a callback on a handle
 ```
 // h is handle to some other process
 r:{b:20#"\000";n:.ffi.cf[`read](x;b;20);0N!n#b;0}
-cf[`sd1](h;(r;(),"i")) / start handler
-cf[`sd0](h;::)          / stop handler
+.ffi.cf[`sd1](h;(r;(),"i")) / start handler
+.ffi.cf[`sd0](h;::)          / stop handler
 ```
 
 

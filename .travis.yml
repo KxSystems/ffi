@@ -9,8 +9,9 @@ before_install:
 script:
 - make all64
 - if [ $TRAVIS_OS_NAME = linux ]; then make all32; fi
-- if [ $TRAVIS_OS_NAME = linux ]; then tar czvf ffi_lin.tar.gz l32 l64 ffi.q test_ffi.q README.md LICENSE; fi
-- if [ $TRAVIS_OS_NAME = osx ]; then tar czvf ffi_osx.tar.gz m64 ffi.q test_ffi.q README.md LICENSE; fi
+- mkdir ffi; cp -r ffi.q test_ffi.q l32 l64 m64 ffi/; echo "$TRAVIS_BRANCH-$TRAVIS_COMMIT" > ffi/VERSION.ffi; cp LICENSE ffi/LICENSE.ffi; cp README.md ffi/README.ffi;
+- tar czvf ffi_$TRAVIS_OS_NAME-$TRAVIS_BRANCH.tar.gz ffi
+
 deploy:
   provider: releases
   api_key:

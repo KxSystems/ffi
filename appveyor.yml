@@ -16,7 +16,12 @@ install:
 build_script:
 - cmd: nmake /f win\Makefile all%BITS%
 after_build:
-- cmd: 7z a ffi_win%BITS%.zip %APPVEYOR_BUILD_FOLDER%\w%BITS% %APPVEYOR_BUILD_FOLDER%\ffi.q %APPVEYOR_BUILD_FOLDER%\test_win.q %APPVEYOR_BUILD_FOLDER%\LICENSE %APPVEYOR_BUILD_FOLDER%\README.md
+- cmd: mkdir ffi
+- ps: Copy-Item w%BITS% -Destination .\ffi\w%BITS%
+- ps: Copy-Item ffi.q test_win.q -Destination .\ffi
+- ps: Copy-Item LICENSE -Destination .\ffi\LICENSE.ffi
+- ps: Copy-Item README.md -Destination .\ffi\README.ffi
+- cmd: 7z a ffi_win%BITS%.zip %APPVEYOR_BUILD_FOLDER%\ffi
 artifacts:
 - path: 'ffi_win*.zip'
 
