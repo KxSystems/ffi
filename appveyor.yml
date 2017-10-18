@@ -18,7 +18,8 @@ build_script:
 after_build:
 - cmd: mkdir ffi
 - ps: Copy-Item w$env:BITS -Destination .\ffi\w$env:BITS
-- ps: Copy-Item ffi.q test_win.q -Destination .\ffi
+- ps: Copy-Item ffi.q -Destination .\ffi
+- ps: Copy-Item test_win.q -Destination .\ffi
 - ps: Copy-Item LICENSE -Destination .\ffi\LICENSE.ffi
 - ps: Copy-Item README.md -Destination .\ffi\README.ffi
 - cmd: 7z a ffi_win%BITS%.zip %APPVEYOR_BUILD_FOLDER%\ffi
