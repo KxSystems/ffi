@@ -1,3 +1,8 @@
+## Requirements
+ - Linux, macOS, Win7(with VS2015.3)
+ - libffi (see installation instructions below)
+ - Latest kdb+
+
 ### Installation
 #### Dependencies
 On Ubuntu 

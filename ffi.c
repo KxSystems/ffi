@@ -190,7 +190,7 @@ Z K cif(K x, K y) /* atypes, rtype */
   case FFI_BAD_ABI:
     R r0(r), krr("prep_cif: FFI_BAD_ABI");
   }
-  R r0(r),krr("prep_cif: unknown");
+  R r0(r), krr("prep_cif: unknown");
 }
 
 Z V *getclosure(K x, V **p);
@@ -378,7 +378,8 @@ EXP K cf(K x, K y) /* simple call: f|(r;f),args */
   free(values);
   free(types);
   if(FFI_OK != rc)
-    R krr(rc==FFI_BAD_TYPEDEF?"prep: FFI_BAD_TYPEDEF":"prep: FFI_BAD_ABI");
+    R krr(rc == FFI_BAD_TYPEDEF ? "prep: FFI_BAD_TYPEDEF" :
+                                  "prep: FFI_BAD_ABI");
   return kvalue(rt, ret);
 }
 
@@ -392,17 +393,18 @@ EXP K kfn(K x, K y) {
   R dl(func, -KJ == y->t ? y->j : y->i);
 }
 
-EXP K loadlib(K x){
-  V*handle;Z C err[256];
-  if(x->t!=-KS)
+EXP K loadlib(K x) {
+  V *handle;
+  Z C err[256];
+  if(x->t != -KS)
     R krr("type");
   // load all symbols to current process
-  handle=dlopen(x->s, RTLD_NOW | RTLD_NODELETE);
+  handle= dlopen(x->s, RTLD_NOW | RTLD_NODELETE);
   if(!handle) {
-      snprintf(err, sizeof(err), "loadlib: %s", dlerror());
-      R krr(err);
+    snprintf(err, sizeof(err), "loadlib: %s", dlerror());
+    R krr(err);
   }
-  R (K)0;
+  R(K) 0;
 }
 
 EXP K ern(K x) {
@@ -443,6 +445,6 @@ EXP K ffi(K x) {
   FFIQ_FUNC(5, kfn, 2);
   FFIQ_FUNC(6, ern, 1);
   FFIQ_FUNC(7, deref, 1);
-  FFIQ_FUNC(8,loadlib,1);
+  FFIQ_FUNC(8, loadlib, 1);
   R xD(x, y);
 }
