@@ -31,7 +31,7 @@ No steps required.
 
 #### Library
 
-Download appropriate release archive from [releases](/releases/latest) page(`tar.gz` for Linux/macOS or `.zip` for Windows).
+Download appropriate release archive from [releases](../../releases/latest) page(`tar.gz` for Linux/macOS or `.zip` for Windows).
 Unpack content of the archive to `QHOME`(`c:\q` on Windows or `~/q` on Linux/macOS as a default).
 
 ```bash
