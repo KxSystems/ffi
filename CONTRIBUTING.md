@@ -46,7 +46,7 @@ On Linux and macOS
 
 ```
 make all64   # default OS combo(x64)
-make all32 # compile as 32 bit libraries
+make all32   # compile as 32 bit libraries
 ```
 
 Windows
