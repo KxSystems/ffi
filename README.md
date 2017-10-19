@@ -133,13 +133,17 @@ q)x / <- a*x+y, a=x=y=2
 ### Callbacks
 ```
 q)cmp:{0N!x,y;(x>y)-x<y} 
-q)x:3 1 2i;.ffi.cf[(" ";`qsort)](x;3i;4i;(cmp;"II";"i")) 
+q)x:3 1 2i;
+// warning: this modifies data in-place regardless of other references.
+q).ffi.cf[(" ";`qsort)](x;3i;4i;(cmp;"II";"i")) 
 1 2
 3 1
 3 2
 q)x
 1 2 3i
-q)x:`c`a`b;.ffi.cf[(" ";`qsort)](x;3i;8i;(cmp;"SS";"i")) 
+q)x:`c`a`b;
+// warning: this modifies data in-place regardless of other references.
+q).ffi.cf[(" ";`qsort)](x;3i;8i;(cmp;"SS";"i")) 
 `a`b
 `c`a
 `c`b
