@@ -31,8 +31,16 @@ No steps required.
 
 #### Library
 
-Download appropriate release archive from https://github.com/sv/ffi/releases page(`tar.gz` for Linux/macOS or `.zip` for Windows).
+Download appropriate release archive from [releases](/releases/latest) page(`tar.gz` for Linux/macOS or `.zip` for Windows).
 Unpack content of the archive to `QHOME`(`c:\q` on Windows or `~/q` on Linux/macOS as a default).
+
+```bash
+# on macOS/Linux to extract direct to $QHOME
+tar xzvf ffi_osx-v0.9.2.tar.gz -C $QHOME --strip 1
+```
+
+On Windows, open archive and copy contents of `ffi` folder(`ffi\*`) from archive to `%QHOME%` or `c:\q`.
+
 
 ## API
 
