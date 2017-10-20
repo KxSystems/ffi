@@ -41,7 +41,7 @@ Windows         | Open the archive and copy content of the `ffi` folder (`ffi\*`
 
 ## API
 
-`ffi.q` exposes two main functions in `.ffi` namespace. See `test_ffi.q` for detailed examples of usage.
+`ffi.q` exposes two main functions in the `.ffi` namespace. See `test_ffi.q` for detailed examples of usage.
 
 
 ### Passing data and getting back results
@@ -72,15 +72,15 @@ It is possible to pass a q function to C code as a callback (see `qsort` example
 
 Simple function call, intended for one-off calls, and taking two arguments:
 
-1. Function name (symbol) or list of return type char and function name.
+1. Function name (symbol) or list of the return type char and the function name.
 2. Mixed list of arguments. The types of arguments passed to the function are inferred from the q types and should match the width of the arguments the C function expects. (If an argument is not a mixed list, append `(::)` to it.)
 
 
 ### `bind` – create projection with function resolved to call with arguments
 
-Prepares a q function and bind it to the provided C function for future calls. Useful for multiple calls to C lib. Takes three arguments:
+Prepares a q function and binds it to the provided C function for future calls. Useful for multiple calls to C lib. Takes three arguments:
 
-1. function name: simple symbol or list of 2 symbols specifying library name 
+1. function name: simple symbol or list of two symbols specifying library name 
 2. char array of argument types
 3. char with return type
 
@@ -89,12 +89,12 @@ Some utility functions are provided as well:
 
 function | purpose
 ---------|-------------------------------------------------------------------------------------
-`cif`    | prepare argument and return types to be used in `call`
-`call`   | call function using prepared types by `cif` with arguments provided
+`cif`    | prepare the return and argument types to be used in `call`
+`call`   | call the function with the argument/s and the types prepared by `cif`
 `errno`  | return current `errno` global on \*nix OS
-`kfn`    | bind function which returns and accepts K objects in current process. Similar to `2:`
+`kfn`    | bind the function which returns and accepts K objects in current process. Similar to `2:`
 
-Arguments to call with should be passed as a generic list to `cf`, `call` and the function created by `bind`.
+Function arguments should be passed as a generic list to `cf`, `call`, and the function created by `bind`.
 
 `cf` and `call` perform native function loading and resolution at the time of the call, which creates significant overhead. Use `bind` to perform this step in advance and reduce runtime overhead.
 
@@ -162,6 +162,6 @@ r:{b:20#"\000";n:.ffi.cf[`read](x;b;20);0N!n#b;0}
 ```
 
 
-- - - - - - - - -
 ## Notes
-This version is based on original [ffiq](https://github.com/enlnt/ffiq) created by @abalkin
+
+This version is based on an original [ffiq](https://github.com/enlnt/ffiq) created by @abalkin
