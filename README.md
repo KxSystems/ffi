@@ -2,11 +2,12 @@
 
 `ffiq` is an extension to kdb+ for loading and calling dynamic libraries using pure `q`. 
 
-We are grateful to Alex Balkin for allowing us to adapt and expand on the [original codebase](https://github.com/enlnt/ffiq). 
-
 The main purpose of the library is to build stable interfaces on top of external libraries, or to interact with the operating system from `q`. No compiler toolchain or writing C/C++ code is required to use this library.
 
 **Watch out** You don’t need to write C code, but you do need to know what you are doing. You can easily crash the kdb+ process or corrupt in-memory data structures with no hope of finding out what happened. No support is offered for crashes caused by use of this library.
+
+We are grateful to Alex Balkin for allowing us to adapt and expand on the [original codebase](https://github.com/enlnt/ffiq). 
+
 
 ## Requirements
 
