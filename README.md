@@ -6,7 +6,7 @@ The main purpose of the library is to build stable interfaces on top of external
 
 **Watch out** You don’t need to write C code, but you do need to know what you are doing. You can easily crash the kdb+ process or corrupt in-memory data structures with no hope of finding out what happened. No support is offered for crashes caused by use of this library.
 
-We are grateful to Alex Balkin for allowing us to adapt and expand on the [original codebase](https://github.com/enlnt/ffiq). 
+We are grateful to Aleks Bunin for allowing us to adapt and expand on the [original codebase](https://github.com/enlnt/ffiq). 
 
 
 ## Requirements
