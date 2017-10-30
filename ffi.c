@@ -131,7 +131,7 @@ Z K kvalue(I t, void *ret) {
   if(t == KC) {
     char *rs= *(char **) ret;
     r= ktn(KC, 1 + strlen(rs));
-    memcpy(kG(r), rs, r->n);
+    memmove(kG(r), rs, r->n);
     R r;
   }
   // if we filling vector dereference ret array
@@ -167,7 +167,7 @@ Z K kvalue(I t, void *ret) {
   R krr("rtype");
 }
 
-Z K cif(K x, K y) /* atypes, rtype */
+Z K cif(K x, K y) /* atypes, rtype -> (cif;ffi_atypes;atypes;rtype) */
 {
   K r;
   ffi_type **atypes;
@@ -270,8 +270,10 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
     func= lookupFunc(y);
   if(!func)
     R(K) 0;
-  argc= MIN(z->n,
-            pcif->nargs); // min of passed args and number of argtypes in cif
+  if(z->n < pcif->nargs)
+    R krr("rank");
+  // min of passed args and number of argtypes in cif
+  argc= MIN(z->n, pcif->nargs);
   rt= ktype(kK(x)[3]->g);
   values= malloc(sizeof(V *) * argc);
   pvalues= malloc(sizeof(V *) * argc);
@@ -279,7 +281,7 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
   ffi_call(pcif, func, &ret, values);
   free(pvalues);
   free(values);
-  R kvalue(rt, ret); // retvalue(pcif->rtype, ret);
+  R kvalue(rt, ret);
 }
 
 Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
