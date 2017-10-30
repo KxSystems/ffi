@@ -7,8 +7,8 @@ ifeq ($(UNAME_S),Linux)
 	QP=l
 endif
 ifeq ($(UNAME_S),Darwin)
-  FFI_INCLUDE=`pkg-config --cflags  /usr/local/Cellar/libffi/3.2.1/lib/pkgconfig/libffi.pc`
-	FFI_LIBS=`pkg-config --libs /usr/local/Cellar/libffi/3.2.1/lib/pkgconfig/libffi.pc`
+  FFI_INCLUDE=-I /usr/include/ffi
+	FFI_LIBS=-lffi
 	OPTS=-g -shared  -undefined dynamic_lookup  -mmacosx-version-min=10.12 -ldl -Wall
 	CC=clang
 	QP=m

@@ -13,6 +13,11 @@
 #else
 #define EXP
 #endif
+#if defined(MACOSX)
+#define ffi_prep_closure_loc(closure, cif, func, data, loc) \
+  ffi_prep_closure(closure, cif, func, data)
+#define ffi_closure_alloc(size, code) malloc(size)
+#endif
 
 #define KXVER 3
 #include "k.h"
