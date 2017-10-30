@@ -14,6 +14,7 @@ ifeq ($(UNAME_S),Darwin)
 	QP=m
 endif
 
+all: all32 all64
 
 all64:
 	mkdir -p $(QP)64
