@@ -46,31 +46,6 @@ Windows         | Open the archive and copy content of the `ffi` folder (`ffi\*`
 
 `ffi.q` exposes two main functions in the `.ffi` namespace. See `test_ffi.q` for detailed examples of usage.
 
-
-### Passing data and getting back results
-
-Throughout the library, characters are used to encode the types of data provided and expected as a result. These are based on the `c` column of [primitive data types](http://code.kx.com/q/ref/datatypes/#primitive-datatypes) and the corresponding upper case for vectors of the same type. The `sz` column is useful to work out what type can hold enough data passing to/from C.
-
-The argument types are derived from data passed to the function (in case of `cf`) or explicitly specified (in case of `bind`). The number of character types provided must match the number of arguments expected by the C function.
-The return type is specified as a single character and can be `' '` (space), which means to discard the result (i.e. `void`). If not provided, defaults to `int`.
-
-char             | C type       
------------------| -------------------------|
-b, c, x          | unsigned int8
-h                | signed int16
-i                | signed int32
-j                | signed int64
-e                | float
-f                | double
-g, s             | uint8*
-`' '` (space)    | void (only as return type)
-r                | raw pointer
-k                | K object
-uppercase letter | pointer to the same type
-
-It is possible to pass a q function to C code as a callback (see `qsort` example below). The function must be presented as a mixed list `(func;argument_types;return_type)`, where `func` is a q function (type `100h`), `argument_types` is a char array with the types the function expects, and `return_type` is a char corresponding to the return type of the function. Note that, as callbacks potentially have unbounded life in C code, they are not deleted after the function completes.
-
-
 ### `cf` – call function
 
 Simple function call, intended for one-off calls, and taking two arguments:
@@ -87,15 +62,36 @@ Prepares a q function and binds it to the provided C function for future calls. 
 2. char array of argument types
 3. char with return type
 
+### Passing data and getting back results
 
-Some utility functions are provided as well:
+Throughout the library, characters are used to encode the types of data provided and expected as a result. These are based on the `c` column of [primitive data types](http://code.kx.com/q/ref/datatypes/#primitive-datatypes) and the corresponding upper case for vectors of the same type. The `sz` column is useful to work out what type can hold enough data passing to/from C.
+
+The argument types are derived from data passed to the function (in case of `cf`) or explicitly specified (in case of `bind`). The number of character types provided must match the number of arguments expected by the C function.
+The return type is specified as a single character and can be `" "` (space), which means to discard the result (i.e. `void`). If not provided, defaults to `int`.
+
+char             | C type       
+-----------------| -------------------------|
+b, c, x          | unsigned int8
+h                | signed int16
+i                | signed int32
+j                | signed int64
+e                | float
+f                | double
+g, s             | uint8*
+`" "` (space)    | void (only as return type)
+r                | raw pointer
+k                | K object
+uppercase letter | pointer to the same type
+
+It is possible to pass a q function to C code as a callback (see `qsort` example below). The function must be presented as a mixed list `(func;argument_types;return_type)`, where `func` is a q function (type `100h`), `argument_types` is a char array with the types the function expects, and `return_type` is a char corresponding to the return type of the function. Note that, as callbacks potentially have unbounded life in C code, they are not deleted after the function completes.
+
+#### Some utility functions are provided as well:
 
 function | purpose
 ---------|-------------------------------------------------------------------------------------
-`cif`    | prepare the return and argument types to be used in `call`
-`call`   | call the function with the argument/s and the types prepared by `cif`
 `errno`  | return current `errno` global on \*nix OS
 `kfn`    | bind the function which returns and accepts K objects in current process. Similar to `2:`
+`ext`    | append shared library extension for current platform to library name. On Linux ```.ffi.ext[`libm]~`libm.so```
 
 Function arguments should be passed as a generic list to `cf`, `call`, and the function created by `bind`.
 

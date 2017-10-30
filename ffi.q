@@ -16,6 +16,7 @@ errno:{ern x}
 deref0:{deref x}
 // load
 load0:{loadlib x}
-nil:$[.z.o like "?32";4;8]#0x0
+ext:{` sv x,("wlm"!`dll`so`dylib)first string .z.o}
+nil:$[.z.o like "?32";0i;0j]
 \d .
 
