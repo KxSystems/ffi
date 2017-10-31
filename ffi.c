@@ -14,7 +14,7 @@
 #define EXP
 #endif
 #if defined(MACOSX)
-#define ffi_prep_closure_loc(closure, cif, func, data, loc) \
+#define ffi_prep_closure_loc(closure, cif, func, data, loc)                    \
   ffi_prep_closure(closure, cif, func, data)
 #define ffi_closure_alloc(size, code) malloc(size)
 #endif
@@ -24,7 +24,7 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #define VD -3   // void
-#define KR -127 // raw pointer
+#define RP 127  // raw pointer
 #define ER -128 // error
 
 /*
@@ -33,6 +33,8 @@
 */
 
 Z ffi_type *chartotype(C c) {
+  if(isupper(c))
+    R &ffi_type_pointer;
   switch(tolower(c)) {
   case 'b':
   case 'c':
@@ -41,14 +43,20 @@ Z ffi_type *chartotype(C c) {
   case 'h':
     R &ffi_type_sint16;
   case 'i':
+  case 'm':
+  case 'd':
+  case 'v':
     R &ffi_type_sint32;
   case 'j':
+  case 'p':
+  case 'n':
     R &ffi_type_sint64;
   case 'e':
     R &ffi_type_float;
   case ' ':
     R &ffi_type_void; // valid only for return types
   case 'f':
+  case 'z':
     R &ffi_type_double;
   case 'r':
   case 'k':
@@ -91,39 +99,41 @@ Z ffi_type *gettype(H t) {
   R &ffi_type_pointer;
 }
 
-Z K retvalue(ffi_type *type, V *x) {
-  switch(type->type) {
+Z K retvalue(I t, ffi_type *ft, V *ret) {
+  switch(ft->type) {
   case FFI_TYPE_VOID:
     R(K) 0;
   case FFI_TYPE_UINT8:
   case FFI_TYPE_SINT8:
-    R kg(*(G *) x);
+    R kg(*(G *) ret);
   case FFI_TYPE_UINT16:
   case FFI_TYPE_SINT16:
-    R kh(*(H *) x);
+    R kh(*(H *) ret);
   case FFI_TYPE_UINT32:
   case FFI_TYPE_SINT32:
   case FFI_TYPE_INT:
-    R ki(*(I *) x);
+    R ki(*(I *) ret);
   case FFI_TYPE_UINT64:
   case FFI_TYPE_SINT64:
-    R kj(*(J *) x);
+    R kj(*(J *) ret);
   case FFI_TYPE_FLOAT:
-    R ke(*(E *) x);
+    R ke(*(E *) ret);
   case FFI_TYPE_DOUBLE:
-    R kf(*(F *) x);
+    R kf(*(F *) ret);
   }
   R(K) 0;
 }
 
 Z I ktype(C t) {
-  Z C ts[]= "kbg xhijefcs mdz uvt";
+  Z C ts[]= "kbg xhijefcspmdznuvt";
   C *p;
   if((p= strchr(ts, t))) {
     return ts - p;
   }
   if((p= strchr(ts, tolower(t))))
     return -(ts - p);
+  if(t == 'r')
+    return RP;
   return ER;
 }
 
@@ -144,6 +154,9 @@ Z K kvalue(I t, void *ret) {
     ret= *(void **) ret;
     t= -t;
   }
+  if(t == -RP) {
+    t= ffi_type_pointer.size == 4 ? -KI : -KJ;
+  }
   r= ka(t);
   switch(t) {
   case -KB:
@@ -160,6 +173,8 @@ Z K kvalue(I t, void *ret) {
   case -KI:
     R r->i= *(I *) ret, r;
   case -KJ:
+  case -KP:
+  case -KN:
     R r->j= *(J *) ret, r;
   case -KE:
     R r->e= *(E *) ret, r;
@@ -309,6 +324,8 @@ Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
 }
 
 // x is (func;atypes) or (func;atypes;rtype) - similar to cif
+// Note: Closure's are not free'd as maybe used for callbacks/etc from c
+// pcl,cif,arg_types will be retained until process exits
 Z V *getclosure(K x, V **p) {
   ffi_status rc;
   ffi_type *rtype= &ffi_type_void;
@@ -327,17 +344,6 @@ Z V *getclosure(K x, V **p) {
   assert(rc == FFI_OK);
 
   R pcl;
-}
-
-Z V freeclosure(V *p) {
-  // don't free closure as maybe used for callbacks/etc from c
-  // pcl,cif,arg_types will be retained until process exits
-  /*
-ffi_closure *pcl= p;
-free(pcl->cif->arg_types);
-free(pcl->cif);
-free(pcl);
-*/
 }
 
 EXP K cf(K x, K y) /* simple call: f|(r;f),args */
@@ -377,10 +383,6 @@ EXP K cf(K x, K y) /* simple call: f|(r;f),args */
   rc= ffi_prep_cif(&cif, FFI_DEFAULT_ABI, n, gettype(rt), types);
   if(FFI_OK == rc)
     ffi_call(&cif, func, &ret, values);
-  for(i= 0; i != n; ++i) {
-    if(pvalues[i] && values[i] != &pvalues[i])
-      freeclosure(pvalues[i]);
-  }
   free(pvalues);
   free(values);
   free(types);
