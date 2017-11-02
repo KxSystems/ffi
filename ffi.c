@@ -435,17 +435,20 @@ EXP K deref(K x) {
   return r;
 }
 
-Z K1(cv){
+Z K cvar(K x) {
   V *v;
   H t;
   if (xt==-KS) {
-    t = KI;
+    t= KI;
   } else {
-    P(xt||xn!=2||xK[0]->t!=-KC,krr("type"));
-    t = ktype(xK[0]->g);
-    x = xK[1];
+    if (x->t!=0 || x->n!=2 || kK(x)[0]->t!=-KC)
+      krr("type");
+    t= ktype(kK(x)[0]->g);
+    x= kK(x)[1];
   }
-  U(v=lookupFunc(x));
+  v= lookupFunc(x);
+  if (v == NULL)
+    R NULL;
   R kvalue(t, v);
 }
 
@@ -467,6 +470,6 @@ EXP K ffi(K x) {
   FFIQ_FUNC(6, ern, 1);
   FFIQ_FUNC(7, deref, 1);
   FFIQ_FUNC(8, loadlib, 1);
-  FFIQ_FUNC(9, cv, 1);
+  FFIQ_FUNC(9, cvar, 1);
   R xD(x, y);
 }
