@@ -1,4 +1,4 @@
-# Foreign-function interface for kdb+
+# FFI for kdb+
 
 `ffiq` is an extension to kdb+ for loading and calling dynamic libraries using pure `q`. 
 
@@ -6,7 +6,7 @@ The main purpose of the library is to build stable interfaces on top of external
 
 **Watch out** You don’t need to write C code, but you do need to know what you are doing. You can easily crash the kdb+ process or corrupt in-memory data structures with no hope of finding out what happened. No support is offered for crashes caused by use of this library.
 
-We are grateful to @abalkin for allowing us to adapt and expand on the [original codebase](https://github.com/enlnt/ffiq). 
+We are grateful to @abalkin for allowing us to adapt and expand on his original codebase. 
 
 
 ## Requirements
@@ -19,11 +19,11 @@ environment                          | installation
 -------------------------------------|----------------------------------------------------------
 Ubuntu Linux 64-bit with 64-bit kdb+ | `sudo apt-get install libffi-dev`
 Ubuntu Linux 64-bit with 32-bit kdb+ | `sudo apt-get install libffi-dev:i386`
-macOS                                | `brew install libffi`(at time of writing is libffi 3.2.1)
+macOS                                | (no action required)
 Windows                              | (no action required)
 
 
-### kdb+ V3.4+
+### kdb+ V3.4 or higher
 
 - [download](http://kx.com/download/)
 - [install](http://code.kx.com/q/tutorials/install/)
@@ -53,6 +53,7 @@ Simple function call, intended for one-off calls, and taking two arguments:
 1. Function name (symbol) or list of the return type char and the function name.
 2. Mixed list of arguments. The types of arguments passed to the function are inferred from the q types and should match the width of the arguments the C function expects. (If an argument is not a mixed list, append `(::)` to it.)
 
+Note: `cf` performs function lookup and on each call and has significant overhead. For hot-path functions use `bind`.
 
 ### `bind` – create projection with function resolved to call with arguments
 
@@ -94,9 +95,6 @@ function | purpose
 `ext`    | append shared library extension for current platform to library name. On Linux ```.ffi.ext[`libm]~`libm.so```
 
 Function arguments should be passed as a generic list to `cf`, `call`, and the function created by `bind`.
-
-`cf` and `call` perform native function loading and resolution at the time of the call, which creates significant overhead. Use `bind` to perform this step in advance and reduce runtime overhead.
-
 
 ## Examples
 ```q
