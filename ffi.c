@@ -13,10 +13,31 @@
 #else
 #define EXP
 #endif
-#if defined(MACOSX)
-#define ffi_prep_closure_loc(closure, cif, func, data, loc)                    \
-  ffi_prep_closure(closure, cif, func, data)
-#define ffi_closure_alloc(size, code) malloc(size)
+
+#if defined(MACOSX) && defined(SYSFFI)
+// as per man ffi_prep_closure on osx
+// this is needed to utilise system version of libffi. Not required if using libffi installed via brew.
+#include <sys/mman.h> // for mmap()
+ffi_status ffi_prep_closure_loc(ffi_closure *closure, ffi_cif *cif,
+                                void (*func)(ffi_cif *cif, void *ret,
+                                             void **args, void *user_data),
+                                void *data, void *loc) {
+  ffi_status status= ffi_prep_closure(closure, cif, func, data);
+  if(status == FFI_OK) {
+    if(mprotect(closure, sizeof(closure), PROT_READ | PROT_EXEC) == -1)
+      status= FFI_BAD_ABI;
+  }
+  return status;
+}
+
+void *ffi_closure_alloc(size_t size, void **code) {
+  ffi_closure *closure;
+  // Allocate a page to hold the closure with read and write permissions.
+  if((closure= mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE,
+                    MAP_ANON | MAP_PRIVATE, -1, 0)) == (void *) -1)
+    return NULL;
+  return closure;
+}
 #endif
 
 #define KXVER 3
@@ -329,7 +350,7 @@ Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
 Z V *getclosure(K x, V **p) {
   ffi_status rc;
   ffi_type *rtype= &ffi_type_void;
-  void *boundf;
+  void *boundf= NULL;
   ffi_closure *pcl= ffi_closure_alloc(sizeof(ffi_closure), &boundf);
   ffi_cif *cif= malloc(sizeof(ffi_cif));
   I n= kK(x)[1]->n;
@@ -440,17 +461,17 @@ EXP K deref(K x) {
 Z K cvar(K x) {
   V *v;
   H t;
-  if (xt==-KS) {
-    t= KI;
+  if(x->t == -KS) {
+    t= -KI;
   } else {
-    if (x->t!=0 || x->n!=2 || kK(x)[0]->t!=-KC)
-      krr("type");
+    if(x->t != 0 || x->n != 2 || kK(x)[0]->t != -KC)
+      R krr("type");
     t= ktype(kK(x)[0]->g);
     x= kK(x)[1];
   }
   v= lookupFunc(x);
-  if (v == NULL)
-    R NULL;
+  if(!v)
+    R(K) 0;
   R kvalue(t, v);
 }
 
@@ -473,5 +494,6 @@ EXP K ffi(K x) {
   FFIQ_FUNC(7, deref, 1);
   FFIQ_FUNC(8, loadlib, 1);
   FFIQ_FUNC(9, cvar, 1);
+
   R xD(x, y);
 }
