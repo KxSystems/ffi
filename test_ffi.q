@@ -9,7 +9,7 @@ x til n
 6i=.ffi.cf[("i";`strlen)]0N!(`abcdef;::)
 3i=.ffi.cf[("i";`strlen)]0N!("abc\000";::) 
 
-puts:.ffi.bind[`puts;"s",();"i"]
+puts:.ffi.bind[`puts;"s";"i"]
 puts 0N!("def\n\000";::)
 puts 0N!(`abc;::)
 
