@@ -213,14 +213,15 @@ Z K cif(K x, K y) /* atypes, rtype -> (cif;ffi_atypes;atypes;rtype) */
   K r;
   ffi_type **atypes;
   ffi_cif *pcif;
-  if(x->t != KC)
+  if(x->t != KC && x->t!= -KC)
     R krr("cif1: argtypes");
   if(y->t != -KC)
     R krr("cif2: rtype");
-  r= ktn(0, 4); /* cif,ffi_atypes,atypes, rtype */
+  r= ktn(0, 4); x=x->t==-KC?kpn((S)&x->g,1):r1(x);
+  /* cif,ffi_atypes,atypes, rtype */
   pcif= (ffi_cif *) kG(kK(r)[0]= ktn(KG, sizeof(ffi_cif)));
   atypes= (ffi_type **) kG((kK(r)[1]= ktn(KG, x->n * sizeof(ffi_type *))));
-  kK(r)[2]= r1(x);
+  kK(r)[2]= x;
   kK(r)[3]= r1(y);
   DO(x->n, atypes[i]= chartotype(kC(x)[i]));
   switch(ffi_prep_cif(pcif, FFI_DEFAULT_ABI, x->n, chartotype(y->g), atypes)) {
