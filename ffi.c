@@ -437,7 +437,24 @@ EXP K deref(K x) {
   return r;
 }
 
-#define N 9
+Z K cvar(K x) {
+  V *v;
+  H t;
+  if (xt==-KS) {
+    t= KI;
+  } else {
+    if (x->t!=0 || x->n!=2 || kK(x)[0]->t!=-KC)
+      krr("type");
+    t= ktype(kK(x)[0]->g);
+    x= kK(x)[1];
+  }
+  v= lookupFunc(x);
+  if (v == NULL)
+    R NULL;
+  R kvalue(t, v);
+}
+
+#define N 10
 #define FFIQ_ENTRY(i, name, def)                                               \
   kS(x)[i]= ss(name);                                                          \
   kK(y)[i]= def
@@ -455,5 +472,6 @@ EXP K ffi(K x) {
   FFIQ_FUNC(6, ern, 1);
   FFIQ_FUNC(7, deref, 1);
   FFIQ_FUNC(8, loadlib, 1);
+  FFIQ_FUNC(9, cvar, 1);
   R xD(x, y);
 }
