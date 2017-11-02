@@ -52,7 +52,7 @@ x:101b
 
 x:`c`a`b;
 // symbols are pointers - size of pointer is .ffi.nil length
-.ffi.cf[(" ";`qsort)]0N!(x;`int$count x;`int$count .ffi.nil;(cmp;"SS";"i")) 
+.ffi.cf[(" ";`qsort)]0N!(x;`int$count x;`int$.ffi.ptrsize;(cmp;"SS";"i")) 
 .z.i=.ffi.cf[`getpid]()
 // get parrent pid
 .ffi.cf[`getppid]()

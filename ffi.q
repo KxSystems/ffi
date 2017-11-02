@@ -16,9 +16,9 @@ errno:{ern x}
 deref0:{deref x}
 // load
 load0:{loadlib x}
-cvar0:sv[`;hsym[.z.o],`ffi] 2:`cvar,1
-cvar:{cvar0 x}
+cvar0:{cvar x}
 ext:{` sv x,("wlm"!`dll`so`dylib)first string .z.o}
 nil:$[.z.o like "?32";0i;0j]
+ptrsize:$[.z.o like "?32";4;8]
 \d .
 
