@@ -1,10 +1,6 @@
 \l ffi.q
 \d .rm
-// installation:
-// 
-// Ubuntu 
-// sudo apt-get install r-mathlib
-// Also see C bindings on https://github.com/rwinston/kdb-rmathlib
+
 lib:{.ffi.ext[`libRmath],x}
 //TODO: check nargs > count a
 //TODO: check a~.Q.t abs type each count[a]#args
@@ -32,8 +28,8 @@ dgamma:bind[`dgamma;"fffi";"f"];
 pgamma:bind[`pgamma;"fffii";"f"];
 qgamma:bind[`qgamma;"fffii";"f"];
 rgamma:bind[`rgamma;"ff";"f"];
-log1pmx:bind[`log1pmx;1#"f";"f"];
-lgamma1p:bind[`lgamma1p;1#"f";"f"];
+log1pmx:bind[`log1pmx;"f";"f"];
+lgamma1p:bind[`lgamma1p;"f";"f"];
 logspace_add:bind[`logspace_add;"ff";"f"];
 logspace_sub:bind[`logspace_sub;"ff";"f"];
 logspace_sum:bind[`logspace_sum;" i";"f"];
@@ -48,7 +44,7 @@ rlnorm:bind[`rlnorm;"ff";"f"];
 dchisq:bind[`dchisq;"ffi";"f"];
 pchisq:bind[`pchisq;"ffii";"f"];
 qchisq:bind[`qchisq;"ffii";"f"];
-rchisq:bind[`rchisq;1#"f";"f"];
+rchisq:bind[`rchisq;"f";"f"];
 dnchisq:bind[`dnchisq;"fffi";"f"];
 pnchisq:bind[`pnchisq;"fffii";"f"];
 qnchisq:bind[`qnchisq;"fffii";"f"];
@@ -73,11 +69,11 @@ rcauchy:bind[`rcauchy;"ff";"f"];
 dexp:bind[`dexp;"ffi";"f"];
 pexp:bind[`pexp;"ffii";"f"];
 qexp:bind[`qexp;"ffii";"f"];
-rexp:bind[`rexp;1#"f";"f"];
+rexp:bind[`rexp;"f";"f"];
 dgeom:bind[`dgeom;"ffi";"f"];
 pgeom:bind[`pgeom;"ffii";"f"];
 qgeom:bind[`qgeom;"ffii";"f"];
-rgeom:bind[`rgeom;1#"f";"f"];
+rgeom:bind[`rgeom;"f";"f"];
 dhyper:bind[`dhyper;"ffffi";"f"];
 phyper:bind[`phyper;"ffffii";"f"];
 qhyper:bind[`qhyper;"ffffii";"f"];
@@ -94,7 +90,7 @@ dpois_raw :bind[`dpois_raw ;"ffi";"f"];
 dpois:bind[`dpois;"ffi";"f"];
 ppois:bind[`ppois;"ffii";"f"];
 qpois:bind[`qpois;"ffii";"f"];
-rpois:bind[`rpois;1#"f";"f"];
+rpois:bind[`rpois;"f";"f"];
 dweibull:bind[`dweibull;"fffi";"f"];
 pweibull:bind[`pweibull;"fffii";"f"];
 qweibull:bind[`qweibull;"fffii";"f"];
@@ -122,15 +118,15 @@ rwilcox:bind[`rwilcox;"ff";"f"];
 dsignrank:bind[`dsignrank;"ffi";"f"];
 psignrank:bind[`psignrank;"ffii";"f"];
 qsignrank:bind[`qsignrank;"ffii";"f"];
-rsignrank:bind[`rsignrank;1#"f";"f"];
-gammafn:bind[`gammafn;1#"f";"f"];
-lgammafn:bind[`lgammafn;1#"f";"f"];
+rsignrank:bind[`rsignrank;"f";"f"];
+gammafn:bind[`gammafn;"f";"f"];
+lgammafn:bind[`lgammafn;"f";"f"];
 lgammafn_sign:bind[`lgammafn_sign;"fI";"f"];
 psigamma:bind[`psigamma;"ff";"f"];
-digamma:bind[`digamma;1#"f";"f"];
-trigamma:bind[`trigamma;1#"f";"f"];
-tetragamma:bind[`tetragamma;1#"f";"f"];
-pentagamma:bind[`pentagamma;1#"f";"f"];
+digamma:bind[`digamma;"f";"f"];
+trigamma:bind[`trigamma;"f";"f"];
+tetragamma:bind[`tetragamma;"f";"f"];
+pentagamma:bind[`pentagamma;"f";"f"];
 beta:bind[`beta;"ff";"f"];
 lbeta:bind[`lbeta;"ff";"f"];
 choose:bind[`choose;"ff";"f"];
@@ -147,14 +143,14 @@ hypot:bind[`hypot;"ff";"f"];
 //pythag:bind[`pythag;"ff";"f"];
 fmax2:bind[`fmax2;"ff";"f"];
 fmin2:bind[`fmin2;"ff";"f"];
-sign:bind[`sign;1#"f";"f"];
+sign:bind[`sign;"f";"f"];
 fprec:bind[`fprec;"ff";"f"];
 fround:bind[`fround;"ff";"f"];
 fsign:bind[`fsign;"ff";"f"];
-ftrunc:bind[`ftrunc;1#"f";"f"];
-cospi:bind[`cospi;1#"f";"f"];
-sinpi:bind[`sinpi;1#"f";"f"];
-tanpi:bind[`tanpi;1#"f";"f"];
+ftrunc:bind[`ftrunc;"f";"f"];
+cospi:bind[`cospi;"f";"f"];
+sinpi:bind[`sinpi;"f";"f"];
+tanpi:bind[`tanpi;"f";"f"];
 logspace_add:bind[`logspace_add;"  ";"f"];
 logspace_sub:bind[`logspace_sub;"  ";"f"];
 // sketch of how to generate function binding above
@@ -166,10 +162,3 @@ logspace_sub:bind[`logspace_sub;"  ";"f"];
 // 1 "\n" sv {x[`func],":bind[`",x[`func],";\"",x[`rest],"\";\"",x[`rtype],"\"];"}each ftable
 
 \d .
-
-.rm.set_seed[123i;456i];
--0.29349741761200659=.rm.norm_rand[]
-0.47839808109594339=.rm.qbeta[.10;1.5;.3;1i;0i]
-.rm.set_seed[.z.t;77911i]        // set random seed
-\ts do[100000;r,:.rm.rnorm[0f;1f]]   // generate 100K N(0,1) random numbers
-0 1~ceiling (avg;dev)@\:r     // verify that avg and dev are 0 and 1

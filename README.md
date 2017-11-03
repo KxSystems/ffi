@@ -11,22 +11,16 @@ We are grateful to @abalkin for allowing us to adapt and expand on his original 
 
 ## Requirements
 
-### Operating system
-Linux, macOS 10.10+, Windows 7+
+- Operating system: Linux, macOS 10.12+, Windows 7+
+- kdb+ v3.4 or higher
+- libffi 3.1+ as per instructions
 
-### libffi 3.1+
 environment                          | installation
 -------------------------------------|----------------------------------------------------------
 Ubuntu Linux 64-bit with 64-bit kdb+ | `sudo apt-get install libffi-dev`
 Ubuntu Linux 64-bit with 32-bit kdb+ | `sudo apt-get install libffi-dev:i386`
 macOS                                | (no action required)
 Windows                              | (no action required)
-
-
-### kdb+ V3.4 or higher
-
-- [download](http://kx.com/download/)
-- [install](http://code.kx.com/q/tutorials/install/)
 
 
 ## Installation
