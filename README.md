@@ -107,7 +107,7 @@ q)b
 q).ffi.cf[("h";`getppid)]() / specify return type, no args
 13615h
 // only Linux
-q).ffi.cf[("e";`libm.so`powf)]2 2e,(::) / explicit library
+q).ffi.cf[("e";.ffi.ext[`libm],`powf)]2 2e,(::) / explicit library
 4e
 ```
 
@@ -116,9 +116,9 @@ q).ffi.cf[("e";`libm.so`powf)]2 2e,(::) / explicit library
 All arguments should be vectors (i.e. pointers to appropriate type).
 ```q
 q)x:10#2f;
-q).ffi.cf[("f";`libblas.so`ddot_)](1#count x; x;1#1;x;1#1)
+q).ffi.cf[("f";.ffi.ext[`libblas],`ddot_)](1#count x; x;1#1;x;1#1)
 40f
-q).ffi.cf[(" ";`libblas.so`daxpy_)](1#count x;1#2f; x;1#1;x;1#1)
+q).ffi.cf[(" ";.ffi.ext[`libblas],`daxpy_)](1#count x;1#2f; x;1#1;x;1#1)
 q)x / <- a*x+y, a=x=y=2
 6 6 6 6 6 6 6 6 6 6f
 ```
