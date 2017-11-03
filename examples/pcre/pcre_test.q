@@ -31,8 +31,14 @@ if[.pcre.rlike[reg;s:"abc123"];show " " sv (rx;"matches(extended)";s)];
 .pcre.regfree reg
 
 // back reference
-reg:.pcre.regcomp[rx:"([a-z]+)_\\1";0i]
+reg:.pcre.regcomp[rx:"([a-z]+)_\\1";.pcre.REG_EXTENDED]
 pmatch:(2*pcount:2)#.pcre.regoff_t;
 if[0i~.pcre.regexec[reg;s:"abc_abc";pcount;pmatch;0i];show " " sv (rx;"matches(extended)";s;" with groups "),sublist[;s]@/:2 cut pmatch];
+.pcre.regfree reg
+
+
+// complex tracking
+reg:.pcre.regcomp[rx:"^(A+)*B";.pcre.REG_EXTENDED]
+\ts .pcre.rlike[reg;s:(1000#"A"),"C"]
 .pcre.regfree reg
 

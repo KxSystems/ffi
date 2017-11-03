@@ -4,6 +4,8 @@ Bindings to [pcre(posix variant)](https://www.pcre.org/original/doc/html/pcrepos
 
 `pcreposix` is a set of functions provides a POSIX-style API for the PCRE regular expression 8-bit library.  
 
+**WARNING** Be aware of complex and potentially catastrophic regular expressions as they might exhibit [exponential run time](https://www.regular-expressions.info/catastrophic.html). This can lead to real [outages](http://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016).
+
 ## Requirements
 FFI for kdb+ is required for this library. `pcre` is normally available on modern Linux distributions and macOS
 
