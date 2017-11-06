@@ -38,7 +38,7 @@ Windows         | Open the archive and copy content of the `ffi` folder (`ffi\*`
 
 ## API
 
-`ffi.q` exposes two main functions in the `.ffi` namespace. See `test_ffi.q` for detailed examples of usage.
+`ffi.q` exposes two main functions in the `.ffi` namespace. See [`test_ffi.q`](/test_ffi.q) for detailed examples of usage.
 
 ### `cf` – call function
 
@@ -104,7 +104,7 @@ q)n:.ffi.cf[`sprintf](b;"%s %c %hd %d %ld %g\n\000";`test;"x";1h;2;3j;4f)
 q)b
 "test x 1 2 3 4\n"
 
-q).ffi.cf[("h";`getppid)]() / specify return type, no args
+q).ffi.cf["i",`getppid]() / specify return type, no args
 13615h
 // only Linux
 q).ffi.cf[("e";.ffi.ext[`libm],`powf)]2 2e,(::) / explicit library
@@ -118,7 +118,7 @@ All arguments should be vectors (i.e. pointers to appropriate type).
 q)x:10#2f;
 q).ffi.cf[("f";.ffi.ext[`libblas],`ddot_)](1#count x; x;1#1;x;1#1)
 40f
-q).ffi.cf[(" ";.ffi.ext[`libblas],`daxpy_)](1#count x;1#2f; x;1#1;x;1#1)
+q).ffi.cf[(" ";.ffi.ext[`libblas],`daxpy_)](1#count x;1#2f; x;1#1;x;1#1)    // updates in place!
 q)x / <- a*x+y, a=x=y=2
 6 6 6 6 6 6 6 6 6 6f
 ```
@@ -129,7 +129,7 @@ q)x / <- a*x+y, a=x=y=2
 q)cmp:{0N!x,y;(x>y)-x<y} 
 q)x:3 1 2i;
 // warning: this modifies data in-place regardless of other references.
-q).ffi.cf[(" ";`qsort)](x;3i;4i;(cmp;"II";"i")) 
+q).ffi.cf[" ",`qsort](x;3i;4i;(cmp;"II";"i"))
 1 2
 3 1
 3 2
@@ -137,7 +137,7 @@ q)x
 1 2 3i
 q)x:`c`a`b;
 // warning: this modifies data in-place regardless of other references.
-q).ffi.cf[(" ";`qsort)](x;3i;8i;(cmp;"SS";"i")) 
+q).ffi.cf[" ",`qsort](x;3i;8i;(cmp;"SS";"i"))
 `a`b
 `c`a
 `c`b
@@ -148,7 +148,7 @@ Register a callback on a handle
 ```q
 // h is handle to some other process
 r:{b:20#"\000";n:.ffi.cf[`read](x;b;20);0N!n#b;0}
-.ffi.cf[`sd1](h;(r;(),"i"))   / start handler
+.ffi.cf[`sd1](h;(r;1#"i"))   / start handler
 .ffi.cf[`sd0](h;::)           / stop handler
 ```
 

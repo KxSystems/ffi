@@ -1,4 +1,4 @@
-.ffi:(sv[`;hsym[.z.o],`ffi] 2:`ffi,1)[]
+.ffi:(`ffi 2:`ffi,1)[]
 \d .ffi
 // prepare calling interface with arg_types and return type 
 cif0:{[arg_types;ret_type] cif[args_types;ret_type]}
@@ -17,6 +17,7 @@ deref0:{deref x}
 // load
 load0:{loadlib x}
 cvar0:{cvar x}
+os:first string .z.o
 ext:{` sv x,("wlm"!`dll`so`dylib)first string .z.o}
 nil:$[.z.o like "?32";0i;0j]
 ptrsize:$[.z.o like "?32";4;8]

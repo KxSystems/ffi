@@ -1,5 +1,5 @@
 \l ffi.q
-if[.z.o like "w??";show "Use test_win.q on Windows.";exit 1;];
+if["w"=.ffi.os;show "Use test_win.q on Windows.";exit 1;];
 .ffi.cf[`puts]("test\000";::)
 .ffi.cf[`printf]("%s %d\n\000";`test;1)
 x: 80#"\000"
@@ -7,7 +7,7 @@ n: .ffi.cf[("i";`sprintf)]0N!(x;"%s %f %hd\000";"test\000"; 2f; 0h)
 x til n
 
 6i=.ffi.cf[("i";`strlen)]0N!(`abcdef;::)
-3i=.ffi.cf[("i";`strlen)]0N!("abc\000";::) 
+3i=.ffi.cf[("i";`strlen)]0N!("abc\000";::)
 
 puts:.ffi.bind[`puts;"s";"i"]
 puts 0N!("def\n\000";::)
@@ -32,9 +32,9 @@ r:{
   read::0N!n#b;
   }
 pipe:0 0i;
-res:.ffi.cf[("i";`pipe)](pipe;(::))
+res:.ffi.cf["i",`pipe](pipe;(::))
 if[res=-1;show (`pipe_write_error;.ffi.errno[])];
-.ffi.cf[`sd1](pipe[0];(r;(),"i")) / start handler
+.ffi.cf[`sd1](pipe[0];(r;1#"i")) / start handler
 .ffi.cf[`write](pipe[1];written;count written:"piping data")
 
 / stop handler. also closes pipe[0]
@@ -42,7 +42,7 @@ if[res=-1;show (`pipe_write_error;.ffi.errno[])];
 valueLater,: enlist ({.ffi.cf[`sd0](pipe[0];::)};0)          
 
 // Callbacks
-cmp:{0N!x,y;(x>y)-x<y} 
+cmp:{0N!x,y;(x>y)-x<y}
 x:3 1 2i
 .ffi.cf[(" ";`qsort)]0N!(x;`int$count x;4i;(cmp;"II";"i"))
 x:2 2 -1i
