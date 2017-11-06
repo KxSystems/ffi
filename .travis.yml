@@ -5,21 +5,18 @@ os:
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install libffi-dev libc6-dev libc6-dev-i386
   libffi-dev:i386; fi
-#- if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install libffi; fi
 script:
 - make all
-#- make all64
-#- if [ $TRAVIS_OS_NAME = linux ]; then make all32; fi
 - echo "Preparing version $TRAVIS_BRANCH-$TRAVIS_COMMIT"
-- mkdir ffi; cp -r ffi.q test_ffi.q l32 l64 m32 m64 ffi/; echo "$TRAVIS_BRANCH-$TRAVIS_COMMIT" > ffi/VERSION.ffi; cp LICENSE ffi/LICENSE.ffi; cp README.md ffi/README.ffi;
+- mkdir ffi; cp -r ffi.q test_ffi.q l32 l64 m32 m64 ffi/; 
+- echo "$TRAVIS_BRANCH-$TRAVIS_COMMIT" > ffi/VERSION.ffi; 
+- cp LICENSE ffi/LICENSE.ffi; cp README.md ffi/README.ffi;
 - tar czvf ffi_$TRAVIS_OS_NAME-$TRAVIS_BRANCH.tar.gz ffi
 - echo "Packaged as ffi_$TRAVIS_OS_NAME-$TRAVIS_BRANCH.tar.gz"
-
 deploy:
   provider: releases
   api_key:
-    secure: 1faMYGwLHCCgNrdz+54RD0DQrEAwWs0bBPECEoyoxyFXqywLYe/hv/OPwG55gWwW56btKQDih8ywWNfnRSMLLUSWJykzDpB54gOeIzDg6yQrQUVz2YsFLBRxas8Kh8GUc1APt3hshpld0CpbANBXhUK9XLLa4QYpAjIS4ehq5sPMdoDDEhO2yE66wyLzEJTeGAbDix9oGomIJw8x0899BTt2iReZGW0+Wm9qwXWh3QwQ+AGZA6vj9/nrdp7AkMigNvkBaUEvFulaCqhIPxfbyFx0lyfqGtMcDuLZGuGvPpJI3tDZTAVf4GZ4EfU32M4JyeGTvMU3lyHxMo1MvcjPPK/rNR7TPAh5IIP3mk+fmUJLafc+M9EU+7TpRZaZ0RBhSbiYbAgy4AtAigyvR8tDRp9vNWzjfn/q+G9e0BsaTSl2BvwGUHhMmtPciUGB97Sbbl9k65ZZv4jpCnSAMT/2IIQDcsXzzE3gpKbnppN9Day1qWxPtCHJ+LJHpSOK8KMs8UEV7tPEDz7Tv6mAR58osjxMSZ0kTwWQxwT9xo9bBC72Tsnx5YJW/ZHbZX8MT2SOdW9LbZe4acc9iL/WRjEILQddFXqQoe6T8mTwfS0rXN8BR8BuyRFw/sZIEw75GV/vYFgTT/KqJClPy7C5W9MEJoGgchqJceUWoXz3285Ktd0=
-  file_glob: true
+    secure: aoNTbz6xhvKKTEBTowbReU/yXiVRIQsXEp3qSDRTQnKjKo8NiuqUKwKKFXIe3H7CeghBd1TGWedowH4YWud6I2iSCGBcSW2EuAuSMJg5aTO5NPnlRU2Zoh8WuLbeBQMYmFcOXR5fCzZa/oiHkKjw5sGJtblIa28A/DgXLW9kkAT+zDD6BT9wYFOjfDFtIETlabKsxb7rpTUXF2Ot9AZsdycdptDpr1x9xH4HGSdwOHEnkXMgjzM2vCtGNizuqAK1mI0DZhH0s4RBquFlQdL+kg5aExs3L7ic9Y3KagqDF5QHd+qPaRcb5Dn4SEruoOp+jco+h+T2hydtqprAoRGnODH1sp1k63kZrVrWqTKrPpKuVuaBnwnOU8I9GwbFdqeMGhdV1Jgwlj2e7DDY4aPpb7dU1dNvwOtA8MrDqzBlJwNkxyVbYb0FIfliAw5EQXaiJ0XiMhtAm0lAVuRROdizjXXfIemEXURJL6fpSsVdZRQuuPMCM6UlABCPOCQ8cTYdrTaOVjxJ4ltcY8ya/8dMtxsBLLQLlbNWeLXgAUzFq/Xc52d7H1G4rbeVa+J7WvcMKCofZzjX0qpQ8zX5G5VPYFz9HFKxQ8cFXpcMjk7o1YhhBANGy6lkhtCK1yfHH1FVfVi7gMVrgWHNkTitC6gEMAp9SvNOFrEeijqIbfZcFAw=
   file: ffi_*.tar.gz
   skip_cleanup: true
   on:
