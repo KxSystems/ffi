@@ -22,7 +22,7 @@ after_build:
 - ps: Copy-Item test_win.q -Destination .\ffi
 - ps: Copy-Item LICENSE -Destination .\ffi\LICENSE.ffi
 - ps: Copy-Item README.md -Destination .\ffi\README.ffi
-- cmd: 7z a ffi_win%BITS%.zip %APPVEYOR_BUILD_FOLDER%\ffi
+- cmd: 7z a ffi_win%BITS%-%APPVEYOR_REPO_TAG%.zip %APPVEYOR_BUILD_FOLDER%\ffi
 artifacts:
 - path: 'ffi_win*.zip'
 
