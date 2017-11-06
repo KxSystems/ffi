@@ -8,7 +8,7 @@ before_install:
 script:
 - make all
 - echo "Preparing version $TRAVIS_BRANCH-$TRAVIS_COMMIT"
-- mkdir ffi; cp -r ffi.q test_ffi.q l32 l64 m32 m64 ffi/; 
+- mkdir ffi; cp -r ffi.q test_ffi.q l32 l64 m32 m64 ffi/ || true;
 - echo "$TRAVIS_BRANCH-$TRAVIS_COMMIT" > ffi/VERSION.ffi; 
 - cp LICENSE ffi/LICENSE.ffi; cp README.md ffi/README.ffi;
 - tar czvf ffi_$TRAVIS_OS_NAME-$TRAVIS_BRANCH.tar.gz ffi
