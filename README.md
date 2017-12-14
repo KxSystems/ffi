@@ -32,7 +32,8 @@ Download the appropriate release archive from [releases](../../releases/latest) 
 
 environment     | action
 ----------------|---------------------------------------------------------------------------------------
-Linux and macOS | `tar xzvf ffi_osx-v0.9.2.tar.gz -C $QHOME --strip 1`
+Linux           | `tar xzvf ffi_linux-v*.tar.gz -C $QHOME --strip 1`
+macOS           | `tar xzvf ffi_osx-v*.tar.gz -C $QHOME --strip 1`
 Windows         | Open the archive and copy content of the `ffi` folder (`ffi\*`) to `%QHOME%` or `c:\q`
 
 
