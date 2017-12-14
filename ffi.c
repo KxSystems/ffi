@@ -16,7 +16,8 @@
 
 #if defined(MACOSX) && defined(SYSFFI)
 // as per man ffi_prep_closure on osx
-// this is needed to utilise system version of libffi. Not required if using libffi installed via brew.
+// this is needed to utilise system version of libffi. Not required if using
+// libffi installed via brew.
 #include <sys/mman.h> // for mmap()
 ffi_status ffi_prep_closure_loc(ffi_closure *closure, ffi_cif *cif,
                                 void (*func)(ffi_cif *cif, void *ret,
@@ -50,7 +51,7 @@ void *ffi_closure_alloc(size_t size, void **code) {
 
 /*
 ' ' - void for return types
-'r' - for raw pointer(stored in kG)
+'r' - for raw pointer(stored in i/j)
 */
 
 Z ffi_type *chartotype(C c) {
@@ -84,6 +85,8 @@ Z ffi_type *chartotype(C c) {
   case 'g':
   case 's':
     R &ffi_type_pointer;
+  case 'l':
+    R sizeof(size_t) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
   }
   R NULL;
 }
@@ -120,31 +123,6 @@ Z ffi_type *gettype(H t) {
   R &ffi_type_pointer;
 }
 
-Z K retvalue(I t, ffi_type *ft, V *ret) {
-  switch(ft->type) {
-  case FFI_TYPE_VOID:
-    R(K) 0;
-  case FFI_TYPE_UINT8:
-  case FFI_TYPE_SINT8:
-    R kg(*(G *) ret);
-  case FFI_TYPE_UINT16:
-  case FFI_TYPE_SINT16:
-    R kh(*(H *) ret);
-  case FFI_TYPE_UINT32:
-  case FFI_TYPE_SINT32:
-  case FFI_TYPE_INT:
-    R ki(*(I *) ret);
-  case FFI_TYPE_UINT64:
-  case FFI_TYPE_SINT64:
-    R kj(*(J *) ret);
-  case FFI_TYPE_FLOAT:
-    R ke(*(E *) ret);
-  case FFI_TYPE_DOUBLE:
-    R kf(*(F *) ret);
-  }
-  R(K) 0;
-}
-
 Z I ktype(C t) {
   Z C ts[]= "kbg xhijefcspmdznuvt";
   C *p;
@@ -176,7 +154,7 @@ Z K kvalue(I t, void *ret) {
     t= -t;
   }
   if(t == -RP) {
-    t= ffi_type_pointer.size == 4 ? -KI : -KJ;
+    R sizeof(V *) == 4 ? ki((I) ret) : kj((J) ret);
   }
   r= ka(t);
   switch(t) {
@@ -213,11 +191,12 @@ Z K cif(K x, K y) /* atypes, rtype -> (cif;ffi_atypes;atypes;rtype) */
   K r;
   ffi_type **atypes;
   ffi_cif *pcif;
-  if(x->t != KC && x->t!= -KC)
+  if(x->t != KC && x->t != -KC)
     R krr("cif1: argtypes");
   if(y->t != -KC)
     R krr("cif2: rtype");
-  r= ktn(0, 4); x=x->t==-KC?kpn((S)&x->g,1):r1(x);
+  r= ktn(0, 4);
+  x= x->t == -KC ? kpn((S) &x->g, 1) : r1(x);
   /* cif,ffi_atypes,atypes, rtype */
   pcif= (ffi_cif *) kG(kK(r)[0]= ktn(KG, sizeof(ffi_cif)));
   atypes= (ffi_type **) kG((kK(r)[1]= ktn(KG, x->n * sizeof(ffi_type *))));
@@ -238,12 +217,14 @@ Z K cif(K x, K y) /* atypes, rtype -> (cif;ffi_atypes;atypes;rtype) */
 Z V *getclosure(K x, V **p);
 
 Z V *getvalue(I t, K x, V **p) {
-  t= x->t;
-  if(t < 0)
+  I ta= x->t;
+  if(t == RP)
+    R((sizeof(V *) == 4) ? (V **) &x->i : (V **) &x->j);
+  if(ta < 0)
     R(V *) & x->g;
-  if(t == 0)
+  if(ta == 0)
     *p= getclosure(x, p);
-  else if(t <= KT)
+  else if(ta <= KT)
     *p= kG(x);
   else
     *p= x;
@@ -447,16 +428,15 @@ EXP K ern(K x) {
 }
 
 EXP K deref(K x) {
-  K r;
-  if(x->t != KG)
+  if(x->t != -KI && x->t != -KJ)
     return krr("type");
-  if(x->n < sizeof(V *))
-    return krr("length: too small");
-  if(!*(V **) kG(x))
-    return krr("deref null");
-  r= ktn(KG, x->n);
-  memcpy(kG(r), *(V **) kG(x), r->n);
-  return r;
+  if(x->t == -KI && ffi_type_pointer.size == 4) {
+    return ki(*(I *) (V *) x->i);
+  } else if(x->t == -KJ && ffi_type_pointer.size == 8) {
+    return kj(*(J *) (V *) x->j);
+  } else {
+    return krr("type: int or long");
+  }
 }
 
 Z K cvar(K x) {
