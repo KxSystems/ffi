@@ -48,6 +48,7 @@ void *ffi_closure_alloc(size_t size, void **code) {
 #define VD -3   // void
 #define RP 127  // raw pointer
 #define ER -128 // error
+#define SZ sizeof(V*)
 
 /*
 ' ' - void for return types
@@ -427,16 +428,36 @@ EXP K ern(K x) {
   return ki(old);
 }
 
-EXP K deref(K x) {
-  if(x->t != -KI && x->t != -KJ)
-    return krr("type");
-  if(x->t == -KI && ffi_type_pointer.size == 4) {
-    return ki(*(I *) (V *) x->i);
-  } else if(x->t == -KJ && ffi_type_pointer.size == 8) {
-    return kj(*(J *) (V *) x->j);
+EXP K deref(K x, K rtypes, K kidx) {
+  V* p;J i,idx,sz=0;K r;
+  if((!(x->t==KJ && SZ==8|| x->t==KI && SZ==4))&&rtypes->t!=KC && kidx->t!=-KJ){
+    return krr("type: [r;C;j] expected");
+  }
+  if(SZ==4 && x->t == -KI) {
+    p=(V*)x->i;
+  } else if(SZ==8 && x->t == -KJ) {
+    p=(V*)x->j;
   } else {
     return krr("type: int or long");
   }
+  idx=kidx->j;
+  ffi_type test_struct_type;
+  test_struct_type.size = 0;
+  test_struct_type.alignment = 0;
+  test_struct_type.type = FFI_TYPE_STRUCT;
+  ffi_type** elems=(ffi_type**)calloc(rtypes->n+1,SZ);
+  size_t* offsets = calloc(rtypes->n,sizeof(size_t));
+  for (i = 0; i < rtypes->n; ++i)
+  {
+    elems[i]=chartotype(kC(rtypes)[i]);
+  }
+  test_struct_type.elements = elems;
+  if (ffi_get_struct_offsets (FFI_DEFAULT_ABI, &test_struct_type, offsets) != FFI_OK)
+    return krr("cannot align resulting data")
+  p=p+test_struct_type.size*idx;
+  r=ktn(0,0 /*rtypes->n*/);
+ 
+  return r;
 }
 
 Z K cvar(K x) {
