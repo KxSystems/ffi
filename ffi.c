@@ -44,6 +44,7 @@ void *ffi_closure_alloc(size_t size, void **code) {
 #define KXVER 3
 #include "k.h"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define FFI_ALIGN(v, a)  (((((size_t) (v))-1) | ((a)-1))+1)
 
 #define VD -3   // void
 #define RP 127  // raw pointer
@@ -283,19 +284,22 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
   I argc, rt;
   if(x->t != 0 || x->n < 2)
     R krr("ciftype");
-  if(z->t != 0)
-    R krr("argtype");
   pcif= (ffi_cif *) kG(kK(x)[0]);
   if(pcif->abi != FFI_DEFAULT_ABI)
     R krr("abi");
+  
+  z=z->t<0?knk(1,r1(z)):r1(z);
+  if(z->t != 0)
+    R r0(z),krr("argtype");
+  if(z->n < pcif->nargs)
+    R r0(z),krr("rank");
+  
   if(y->t == KG)
     func= *(V **) kG(y);
   else
     func= lookupFunc(y);
   if(!func)
-    R(K) 0;
-  if(z->n < pcif->nargs)
-    R krr("rank");
+    R r0(z),(K)0;
   // min of passed args and number of argtypes in cif
   argc= MIN(z->n, pcif->nargs);
   rt= ktype(kK(x)[3]->g);
@@ -305,6 +309,7 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
   ffi_call(pcif, func, &ret, values);
   free(pvalues);
   free(values);
+  r0(z);
   R kvalue(rt, ret);
 }
 
@@ -452,10 +457,22 @@ EXP K deref(K x, K rtypes, K kidx) {
     elems[i]=chartotype(kC(rtypes)[i]);
   }
   test_struct_type.elements = elems;
-  if (ffi_get_struct_offsets (FFI_DEFAULT_ABI, &test_struct_type, offsets) != FFI_OK)
-    return krr("cannot align resulting data")
+  ffi_cif cif;
+  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, 0, &test_struct_type, NULL) != FFI_OK)
+    return krr("cannot align resulting data");
+  //if (ffi_get_struct_offsets (FFI_DEFAULT_ABI, &test_struct_type, offsets) != FFI_OK)
+  //  return krr("cannot align resulting data");
+  O("size of struct is %d\n",test_struct_type.size);
   p=p+test_struct_type.size*idx;
-  r=ktn(0,0 /*rtypes->n*/);
+
+  r=ktn(0,rtypes->n);J offset=0;
+
+  for (int i = 0; i < r->n; ++i)
+  {
+    offset=FFI_ALIGN(offset,elems[i]->alignment);
+    kK(r)[i]=kvalue(ktype(kC(rtypes)[i]),p+offset);
+    offset+=elems[i]->size;
+  }
  
   return r;
 }
@@ -493,7 +510,7 @@ EXP K ffi(K x) {
   FFIQ_FUNC(4, cf, 2);
   FFIQ_FUNC(5, kfn, 2);
   FFIQ_FUNC(6, ern, 1);
-  FFIQ_FUNC(7, deref, 1);
+  FFIQ_FUNC(7, deref, 3);
   FFIQ_FUNC(8, loadlib, 1);
   FFIQ_FUNC(9, cvar, 1);
 
