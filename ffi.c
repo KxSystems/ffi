@@ -462,7 +462,6 @@ EXP K deref(K x, K rtypes, K kidx) {
     return krr("cannot align resulting data");
   //if (ffi_get_struct_offsets (FFI_DEFAULT_ABI, &test_struct_type, offsets) != FFI_OK)
   //  return krr("cannot align resulting data");
-  O("size of struct is %d\n",test_struct_type.size);
   p=p+test_struct_type.size*idx;
 
   r=ktn(0,rtypes->n);J offset=0;
