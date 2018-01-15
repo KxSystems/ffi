@@ -35,7 +35,7 @@ void *ffi_closure_alloc(size_t size, void **code) {
   ffi_closure *closure;
   // Allocate a page to hold the closure with read and write permissions.
   if((closure= mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE,
-                    MAP_ANON | MAP_PRIVATE, -1, 0)) == (void *) -1)
+                    MAP_ANON | MAP_PRIVATE, -1, 0)) == (void *)-1)
     return NULL;
   return closure;
 }
@@ -44,12 +44,12 @@ void *ffi_closure_alloc(size_t size, void **code) {
 #define KXVER 3
 #include "k.h"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define FFI_ALIGN(v, a)  (((((size_t) (v))-1) | ((a)-1))+1)
+#define FFI_ALIGN(v, a) (((((size_t)(v)) - 1) | ((a)-1)) + 1)
 
 #define VD -3   // void
 #define RP 127  // raw pointer
 #define ER -128 // error
-#define SZ sizeof(V*)
+#define SZ sizeof(V *)
 
 /*
 ' ' - void for return types
@@ -141,49 +141,49 @@ Z I ktype(C t) {
 Z K kvalue(I t, void *ret) {
   K r;
   if(t == 0)
-    R *(K *) ret;
+    R *(K *)ret;
   if(t == VD)
     R(K) 0;
   if(t == KC) {
-    char *rs= *(char **) ret;
+    char *rs= *(char **)ret;
     r= ktn(KC, 1 + strlen(rs));
     memmove(kG(r), rs, r->n);
     R r;
   }
   // if we filling vector dereference ret array
   if(t > 0) {
-    ret= *(void **) ret;
+    ret= *(void **)ret;
     t= -t;
   }
   if(t == -RP) {
-    R sizeof(V *) == 4 ? ki((I) ret) : kj((J) ret);
+    R sizeof(V *) == 4 ? ki((I)ret) : kj((J)ret);
   }
   r= ka(t);
   switch(t) {
   case -KB:
   case -KC:
   case -KG:
-    R r->g= *(G *) ret, r;
+    R r->g= *(G *)ret, r;
   case -KH:
-    R r->h= *(H *) ret, r;
+    R r->h= *(H *)ret, r;
   case -KM:
   case -KD:
   case -KU:
   case -KV:
   case -KT:
   case -KI:
-    R r->i= *(I *) ret, r;
+    R r->i= *(I *)ret, r;
   case -KJ:
   case -KP:
   case -KN:
-    R r->j= *(J *) ret, r;
+    R r->j= *(J *)ret, r;
   case -KE:
-    R r->e= *(E *) ret, r;
+    R r->e= *(E *)ret, r;
   case -KZ:
   case -KF:
-    R r->f= *(F *) ret, r;
+    R r->f= *(F *)ret, r;
   case -KS:
-    R r->s= ss(*(S *) ret), r;
+    R r->s= ss(*(S *)ret), r;
   }
   R krr("rtype");
 }
@@ -198,10 +198,10 @@ Z K cif(K x, K y) /* atypes, rtype -> (cif;ffi_atypes;atypes;rtype) */
   if(y->t != -KC)
     R krr("cif2: rtype");
   r= ktn(0, 4);
-  x= x->t == -KC ? kpn((S) &x->g, 1) : r1(x);
+  x= x->t == -KC ? kpn((S)&x->g, 1) : r1(x);
   /* cif,ffi_atypes,atypes, rtype */
-  pcif= (ffi_cif *) kG(kK(r)[0]= ktn(KG, sizeof(ffi_cif)));
-  atypes= (ffi_type **) kG((kK(r)[1]= ktn(KG, x->n * sizeof(ffi_type *))));
+  pcif= (ffi_cif *)kG(kK(r)[0]= ktn(KG, sizeof(ffi_cif)));
+  atypes= (ffi_type **)kG((kK(r)[1]= ktn(KG, x->n * sizeof(ffi_type *))));
   kK(r)[2]= x;
   kK(r)[3]= r1(y);
   DO(x->n, atypes[i]= chartotype(kC(x)[i]));
@@ -221,7 +221,7 @@ Z V *getclosure(K x, V **p);
 Z V *getvalue(I t, K x, V **p) {
   I ta= x->t;
   if(t == RP)
-    R((sizeof(V *) == 4) ? (V **) &x->i : (V **) &x->j);
+    R((sizeof(V *) == 4) ? (V **)&x->i : (V **)&x->j);
   if(ta < 0)
     R(V *) & x->g;
   if(ta == 0)
@@ -270,10 +270,10 @@ EXP K bindf(K f, K a, K r) {
     R(K) 0;
   func= lookupFunc(f);
   if(!func)
-    R r0(bound), (K) 0;
+    R r0(bound), (K)0;
   fp= ktn(KG, sizeof(V *));
   memcpy(kG(fp), &func, fp->n);
-  R k(0, ".ffi.call", bound, fp, (K) 0);
+  R k(0, ".ffi.call", bound, fp, (K)0);
 }
 
 EXP K call(K x, K y, K z) /*cif,func,values*/
@@ -284,22 +284,22 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
   I argc, rt;
   if(x->t != 0 || x->n < 2)
     R krr("ciftype");
-  pcif= (ffi_cif *) kG(kK(x)[0]);
+  pcif= (ffi_cif *)kG(kK(x)[0]);
   if(pcif->abi != FFI_DEFAULT_ABI)
     R krr("abi");
-  
-  z=z->t<0?knk(1,r1(z)):r1(z);
+
+  z= z->t < 0 ? knk(1, r1(z)) : r1(z);
   if(z->t != 0)
-    R r0(z),krr("argtype");
+    R r0(z), krr("argtype");
   if(z->n < pcif->nargs)
-    R r0(z),krr("rank");
-  
+    R r0(z), krr("rank");
+
   if(y->t == KG)
-    func= *(V **) kG(y);
+    func= *(V **)kG(y);
   else
     func= lookupFunc(y);
   if(!func)
-    R r0(z),(K)0;
+    R r0(z), (K)0;
   // min of passed args and number of argtypes in cif
   argc= MIN(z->n, pcif->nargs);
   rt= ktype(kK(x)[3]->g);
@@ -315,11 +315,11 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
 
 Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   I i, n= cif->nargs, sz;
-  K x= ktn(0, n), r, t= kK((K) userdata)[1];
+  K x= ktn(0, n), r, t= kK((K)userdata)[1];
   for(i= 0; i != n; ++i) {
     kK(x)[i]= kvalue(ktype(kC(t)[i]), args[i]);
   }
-  r= dot(kK((K) userdata)[0], x);
+  r= dot(kK((K)userdata)[0], x);
   r0(x);
   if(cif->rtype != &ffi_type_void)
     memset(resp, 0, cif->rtype->size);
@@ -434,45 +434,51 @@ EXP K ern(K x) {
 }
 
 EXP K deref(K x, K rtypes, K kidx) {
-  V* p;J i,idx,sz=0;K r;
-  if((!(x->t==KJ && SZ==8|| x->t==KI && SZ==4))&&rtypes->t!=KC && kidx->t!=-KJ){
+  V *p;
+  J i, idx, offset;
+  size_t *offsets;
+  K r;
+  ffi_cif cif;
+  ffi_type test_struct_type;
+  ffi_type **elems;
+  if((!(x->t == KJ && SZ == 8 || x->t == KI && SZ == 4)) && rtypes->t != KC &&
+     kidx->t != -KJ) {
     return krr("type: [r;C;j] expected");
   }
-  if(SZ==4 && x->t == -KI) {
-    p=(V*)x->i;
-  } else if(SZ==8 && x->t == -KJ) {
-    p=(V*)x->j;
+  if(SZ == 4 && x->t == -KI) {
+    p= (V *)x->i;
+  } else if(SZ == 8 && x->t == -KJ) {
+    p= (V *)x->j;
   } else {
     return krr("type: int or long");
   }
-  idx=kidx->j;
-  ffi_type test_struct_type;
-  test_struct_type.size = 0;
-  test_struct_type.alignment = 0;
-  test_struct_type.type = FFI_TYPE_STRUCT;
-  ffi_type** elems=(ffi_type**)calloc(rtypes->n+1,SZ);
-  size_t* offsets = calloc(rtypes->n,sizeof(size_t));
-  for (i = 0; i < rtypes->n; ++i)
-  {
-    elems[i]=chartotype(kC(rtypes)[i]);
+  idx= kidx->j;
+
+  test_struct_type.size= 0;
+  test_struct_type.alignment= 0;
+  test_struct_type.type= FFI_TYPE_STRUCT;
+  elems= (ffi_type **)calloc(rtypes->n + 1, SZ);
+  offsets= calloc(rtypes->n, sizeof(size_t));
+  for(i= 0; i < rtypes->n; ++i) {
+    elems[i]= chartotype(kC(rtypes)[i]);
   }
-  test_struct_type.elements = elems;
-  ffi_cif cif;
-  if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, 0, &test_struct_type, NULL) != FFI_OK)
+  test_struct_type.elements= elems;
+
+  if(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0, &test_struct_type, NULL) != FFI_OK)
     return krr("cannot align resulting data");
-  //if (ffi_get_struct_offsets (FFI_DEFAULT_ABI, &test_struct_type, offsets) != FFI_OK)
+  // if (ffi_get_struct_offsets (FFI_DEFAULT_ABI, &test_struct_type, offsets) !=
+  // FFI_OK)
   //  return krr("cannot align resulting data");
-  p=p+test_struct_type.size*idx;
+  p= p + test_struct_type.size * idx;
 
-  r=ktn(0,rtypes->n);J offset=0;
-
-  for (int i = 0; i < r->n; ++i)
-  {
-    offset=FFI_ALIGN(offset,elems[i]->alignment);
-    kK(r)[i]=kvalue(ktype(kC(rtypes)[i]),p+offset);
-    offset+=elems[i]->size;
+  r= ktn(0, rtypes->n);
+  offset= 0;
+  for(i= 0; i < r->n; ++i) {
+    offset= FFI_ALIGN(offset, elems[i]->alignment);
+    kK(r)[i]= kvalue(ktype(kC(rtypes)[i]), p + offset);
+    offset+= elems[i]->size;
   }
- 
+
   return r;
 }
 
@@ -502,7 +508,7 @@ Z K cvar(K x) {
 EXP K ffi(K x) {
   K y= ktn(0, N);
   x= ktn(KS, N);
-  FFIQ_ENTRY(0, "", k(0, "::", (K) 0));
+  FFIQ_ENTRY(0, "", k(0, "::", (K)0));
   FFIQ_FUNC(1, cif, 2);
   FFIQ_FUNC(2, bindf, 3);
   FFIQ_FUNC(3, call, 3);
