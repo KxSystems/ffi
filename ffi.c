@@ -156,7 +156,7 @@ Z K kvalue(I t, void *ret) {
     t= -t;
   }
   if(t == -RP) {
-    R sizeof(V *) == 4 ? ki((I)ret) : kj((J)ret);
+    R SZ == 4 ? ki((I)ret) : kj((J)ret);
   }
   r= ka(t);
   switch(t) {
@@ -434,21 +434,21 @@ EXP K ern(K x) {
 }
 
 EXP K deref(K x, K rtypes, K kidx) {
-  V *p;
+  G *p;
   J i, idx, offset;
-  size_t *offsets;
+  //size_t *offsets; // for ffi_get_struct_offsets
   K r;
   ffi_cif cif;
   ffi_type test_struct_type;
   ffi_type **elems;
-  if((!(x->t == KJ && SZ == 8 || x->t == KI && SZ == 4)) && rtypes->t != KC &&
+  if((!((x->t == KJ && SZ == 8) || (x->t == KI && SZ == 4))) && rtypes->t != KC &&
      kidx->t != -KJ) {
     return krr("type: [r;C;j] expected");
   }
   if(SZ == 4 && x->t == -KI) {
-    p= (V *)x->i;
+    p= (G *)x->i;
   } else if(SZ == 8 && x->t == -KJ) {
-    p= (V *)x->j;
+    p= (G *)x->j;
   } else {
     return krr("type: int or long");
   }
@@ -458,7 +458,7 @@ EXP K deref(K x, K rtypes, K kidx) {
   test_struct_type.alignment= 0;
   test_struct_type.type= FFI_TYPE_STRUCT;
   elems= (ffi_type **)calloc(rtypes->n + 1, SZ);
-  offsets= calloc(rtypes->n, sizeof(size_t));
+  //offsets= calloc(rtypes->n, sizeof(size_t));
   for(i= 0; i < rtypes->n; ++i) {
     elems[i]= chartotype(kC(rtypes)[i]);
   }

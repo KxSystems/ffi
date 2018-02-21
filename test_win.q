@@ -35,8 +35,8 @@ x:101b
 .ffi.cf[(" ";`msvcrt`qsort)]0N!(x;`int$count x;1i;(cmp;"BB";"i"))
 
 x:`c`a`b;
-// symbols are pointers - size of pointer is .ffi.nil length
-.ffi.cf[(" ";`msvcrt`qsort)]0N!(x;`int$count x;`int$count .ffi.nil;(cmp;"SS";"i")) 
+// symbols are pointers - size of pointer is .ffi.ptrsize
+.ffi.cf[(" ";`msvcrt`qsort)]0N!(x;`int$count x;`int$.ffi.ptrsize;(cmp;"SS";"i"))
 .z.i=.ffi.cf[("i";`msvcrt`_getpid)]()
 
 
