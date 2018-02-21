@@ -16,7 +16,8 @@
 
 #if defined(MACOSX) && defined(SYSFFI)
 // as per man ffi_prep_closure on osx
-// this is needed to utilise system version of libffi. Not required if using libffi installed via brew.
+// this is needed to utilise system version of libffi. Not required if using
+// libffi installed via brew.
 #include <sys/mman.h> // for mmap()
 ffi_status ffi_prep_closure_loc(ffi_closure *closure, ffi_cif *cif,
                                 void (*func)(ffi_cif *cif, void *ret,
@@ -34,7 +35,7 @@ void *ffi_closure_alloc(size_t size, void **code) {
   ffi_closure *closure;
   // Allocate a page to hold the closure with read and write permissions.
   if((closure= mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE,
-                    MAP_ANON | MAP_PRIVATE, -1, 0)) == (void *) -1)
+                    MAP_ANON | MAP_PRIVATE, -1, 0)) == (void *)-1)
     return NULL;
   return closure;
 }
@@ -43,14 +44,16 @@ void *ffi_closure_alloc(size_t size, void **code) {
 #define KXVER 3
 #include "k.h"
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define FFI_ALIGN(v, a) (((((size_t)(v)) - 1) | ((a)-1)) + 1)
 
 #define VD -3   // void
 #define RP 127  // raw pointer
 #define ER -128 // error
+#define SZ sizeof(V *)
 
 /*
 ' ' - void for return types
-'r' - for raw pointer(stored in kG)
+'r' - for raw pointer(stored in i/j)
 */
 
 Z ffi_type *chartotype(C c) {
@@ -84,6 +87,8 @@ Z ffi_type *chartotype(C c) {
   case 'g':
   case 's':
     R &ffi_type_pointer;
+  case 'l':
+    R sizeof(size_t) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
   }
   R NULL;
 }
@@ -120,31 +125,6 @@ Z ffi_type *gettype(H t) {
   R &ffi_type_pointer;
 }
 
-Z K retvalue(I t, ffi_type *ft, V *ret) {
-  switch(ft->type) {
-  case FFI_TYPE_VOID:
-    R(K) 0;
-  case FFI_TYPE_UINT8:
-  case FFI_TYPE_SINT8:
-    R kg(*(G *) ret);
-  case FFI_TYPE_UINT16:
-  case FFI_TYPE_SINT16:
-    R kh(*(H *) ret);
-  case FFI_TYPE_UINT32:
-  case FFI_TYPE_SINT32:
-  case FFI_TYPE_INT:
-    R ki(*(I *) ret);
-  case FFI_TYPE_UINT64:
-  case FFI_TYPE_SINT64:
-    R kj(*(J *) ret);
-  case FFI_TYPE_FLOAT:
-    R ke(*(E *) ret);
-  case FFI_TYPE_DOUBLE:
-    R kf(*(F *) ret);
-  }
-  R(K) 0;
-}
-
 Z I ktype(C t) {
   Z C ts[]= "kbg xhijefcspmdznuvt";
   C *p;
@@ -161,49 +141,49 @@ Z I ktype(C t) {
 Z K kvalue(I t, void *ret) {
   K r;
   if(t == 0)
-    R *(K *) ret;
+    R *(K *)ret;
   if(t == VD)
     R(K) 0;
   if(t == KC) {
-    char *rs= *(char **) ret;
+    char *rs= *(char **)ret;
     r= ktn(KC, 1 + strlen(rs));
     memmove(kG(r), rs, r->n);
     R r;
   }
   // if we filling vector dereference ret array
   if(t > 0) {
-    ret= *(void **) ret;
+    ret= *(void **)ret;
     t= -t;
   }
   if(t == -RP) {
-    t= ffi_type_pointer.size == 4 ? -KI : -KJ;
+    R SZ == 4 ? ki((I)ret) : kj((J)ret);
   }
   r= ka(t);
   switch(t) {
   case -KB:
   case -KC:
   case -KG:
-    R r->g= *(G *) ret, r;
+    R r->g= *(G *)ret, r;
   case -KH:
-    R r->h= *(H *) ret, r;
+    R r->h= *(H *)ret, r;
   case -KM:
   case -KD:
   case -KU:
   case -KV:
   case -KT:
   case -KI:
-    R r->i= *(I *) ret, r;
+    R r->i= *(I *)ret, r;
   case -KJ:
   case -KP:
   case -KN:
-    R r->j= *(J *) ret, r;
+    R r->j= *(J *)ret, r;
   case -KE:
-    R r->e= *(E *) ret, r;
+    R r->e= *(E *)ret, r;
   case -KZ:
   case -KF:
-    R r->f= *(F *) ret, r;
+    R r->f= *(F *)ret, r;
   case -KS:
-    R r->s= ss(*(S *) ret), r;
+    R r->s= ss(*(S *)ret), r;
   }
   R krr("rtype");
 }
@@ -213,14 +193,15 @@ Z K cif(K x, K y) /* atypes, rtype -> (cif;ffi_atypes;atypes;rtype) */
   K r;
   ffi_type **atypes;
   ffi_cif *pcif;
-  if(x->t != KC && x->t!= -KC)
+  if(x->t != KC && x->t != -KC)
     R krr("cif1: argtypes");
   if(y->t != -KC)
     R krr("cif2: rtype");
-  r= ktn(0, 4); x=x->t==-KC?kpn((S)&x->g,1):r1(x);
+  r= ktn(0, 4);
+  x= x->t == -KC ? kpn((S)&x->g, 1) : r1(x);
   /* cif,ffi_atypes,atypes, rtype */
-  pcif= (ffi_cif *) kG(kK(r)[0]= ktn(KG, sizeof(ffi_cif)));
-  atypes= (ffi_type **) kG((kK(r)[1]= ktn(KG, x->n * sizeof(ffi_type *))));
+  pcif= (ffi_cif *)kG(kK(r)[0]= ktn(KG, sizeof(ffi_cif)));
+  atypes= (ffi_type **)kG((kK(r)[1]= ktn(KG, x->n * sizeof(ffi_type *))));
   kK(r)[2]= x;
   kK(r)[3]= r1(y);
   DO(x->n, atypes[i]= chartotype(kC(x)[i]));
@@ -238,12 +219,14 @@ Z K cif(K x, K y) /* atypes, rtype -> (cif;ffi_atypes;atypes;rtype) */
 Z V *getclosure(K x, V **p);
 
 Z V *getvalue(I t, K x, V **p) {
-  t= x->t;
-  if(t < 0)
+  I ta= x->t;
+  if(t == RP)
+    R((sizeof(V *) == 4) ? (V **)&x->i : (V **)&x->j);
+  if(ta < 0)
     R(V *) & x->g;
-  if(t == 0)
+  if(ta == 0)
     *p= getclosure(x, p);
-  else if(t <= KT)
+  else if(ta <= KT)
     *p= kG(x);
   else
     *p= x;
@@ -287,10 +270,10 @@ EXP K bindf(K f, K a, K r) {
     R(K) 0;
   func= lookupFunc(f);
   if(!func)
-    R r0(bound), (K) 0;
+    R r0(bound), (K)0;
   fp= ktn(KG, sizeof(V *));
   memcpy(kG(fp), &func, fp->n);
-  R k(0, ".ffi.call", bound, fp, (K) 0);
+  R k(0, ".ffi.call", bound, fp, (K)0);
 }
 
 EXP K call(K x, K y, K z) /*cif,func,values*/
@@ -301,19 +284,22 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
   I argc, rt;
   if(x->t != 0 || x->n < 2)
     R krr("ciftype");
-  if(z->t != 0)
-    R krr("argtype");
-  pcif= (ffi_cif *) kG(kK(x)[0]);
+  pcif= (ffi_cif *)kG(kK(x)[0]);
   if(pcif->abi != FFI_DEFAULT_ABI)
     R krr("abi");
+
+  z= z->t < 0 ? knk(1, r1(z)) : r1(z);
+  if(z->t != 0)
+    R r0(z), krr("argtype");
+  if(z->n < pcif->nargs)
+    R r0(z), krr("rank");
+
   if(y->t == KG)
-    func= *(V **) kG(y);
+    func= *(V **)kG(y);
   else
     func= lookupFunc(y);
   if(!func)
-    R(K) 0;
-  if(z->n < pcif->nargs)
-    R krr("rank");
+    R r0(z), (K)0;
   // min of passed args and number of argtypes in cif
   argc= MIN(z->n, pcif->nargs);
   rt= ktype(kK(x)[3]->g);
@@ -323,16 +309,17 @@ EXP K call(K x, K y, K z) /*cif,func,values*/
   ffi_call(pcif, func, &ret, values);
   free(pvalues);
   free(values);
+  r0(z);
   R kvalue(rt, ret);
 }
 
 Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   I i, n= cif->nargs, sz;
-  K x= ktn(0, n), r, t= kK((K) userdata)[1];
+  K x= ktn(0, n), r, t= kK((K)userdata)[1];
   for(i= 0; i != n; ++i) {
     kK(x)[i]= kvalue(ktype(kC(t)[i]), args[i]);
   }
-  r= dot(kK((K) userdata)[0], x);
+  r= dot(kK((K)userdata)[0], x);
   r0(x);
   if(cif->rtype != &ffi_type_void)
     memset(resp, 0, cif->rtype->size);
@@ -446,16 +433,52 @@ EXP K ern(K x) {
   return ki(old);
 }
 
-EXP K deref(K x) {
+EXP K deref(K x, K rtypes, K kidx) {
+  G *p;
+  J i, idx, offset;
+  //size_t *offsets; // for ffi_get_struct_offsets
   K r;
-  if(x->t != KG)
-    return krr("type");
-  if(x->n < sizeof(V *))
-    return krr("length: too small");
-  if(!*(V **) kG(x))
-    return krr("deref null");
-  r= ktn(KG, x->n);
-  memcpy(kG(r), *(V **) kG(x), r->n);
+  ffi_cif cif;
+  ffi_type test_struct_type;
+  ffi_type **elems;
+  if((!((x->t == KJ && SZ == 8) || (x->t == KI && SZ == 4))) && rtypes->t != KC &&
+     kidx->t != -KJ) {
+    return krr("type: [r;C;j] expected");
+  }
+  if(SZ == 4 && x->t == -KI) {
+    p= (G *)x->i;
+  } else if(SZ == 8 && x->t == -KJ) {
+    p= (G *)x->j;
+  } else {
+    return krr("type: int or long");
+  }
+  idx= kidx->j;
+
+  test_struct_type.size= 0;
+  test_struct_type.alignment= 0;
+  test_struct_type.type= FFI_TYPE_STRUCT;
+  elems= (ffi_type **)calloc(rtypes->n + 1, SZ);
+  //offsets= calloc(rtypes->n, sizeof(size_t));
+  for(i= 0; i < rtypes->n; ++i) {
+    elems[i]= chartotype(kC(rtypes)[i]);
+  }
+  test_struct_type.elements= elems;
+
+  if(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0, &test_struct_type, NULL) != FFI_OK)
+    return krr("cannot align resulting data");
+  // if (ffi_get_struct_offsets (FFI_DEFAULT_ABI, &test_struct_type, offsets) !=
+  // FFI_OK)
+  //  return krr("cannot align resulting data");
+  p= p + test_struct_type.size * idx;
+
+  r= ktn(0, rtypes->n);
+  offset= 0;
+  for(i= 0; i < r->n; ++i) {
+    offset= FFI_ALIGN(offset, elems[i]->alignment);
+    kK(r)[i]= kvalue(ktype(kC(rtypes)[i]), p + offset);
+    offset+= elems[i]->size;
+  }
+
   return r;
 }
 
@@ -485,14 +508,14 @@ Z K cvar(K x) {
 EXP K ffi(K x) {
   K y= ktn(0, N);
   x= ktn(KS, N);
-  FFIQ_ENTRY(0, "", k(0, "::", (K) 0));
+  FFIQ_ENTRY(0, "", k(0, "::", (K)0));
   FFIQ_FUNC(1, cif, 2);
   FFIQ_FUNC(2, bindf, 3);
   FFIQ_FUNC(3, call, 3);
   FFIQ_FUNC(4, cf, 2);
   FFIQ_FUNC(5, kfn, 2);
   FFIQ_FUNC(6, ern, 1);
-  FFIQ_FUNC(7, deref, 1);
+  FFIQ_FUNC(7, deref, 3);
   FFIQ_FUNC(8, loadlib, 1);
   FFIQ_FUNC(9, cvar, 1);
 

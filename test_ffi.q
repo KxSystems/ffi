@@ -8,6 +8,10 @@ x til n
 
 6i=.ffi.cf[("i";`strlen)]0N!(`abcdef;::)
 3i=.ffi.cf[("i";`strlen)]0N!("abc\000";::)
+strlen:.ffi.bind[`strlen;"C";"i"]
+strlen ("123\000";::)
+strlen (`abc;::)
+
 
 puts:.ffi.bind[`puts;"s";"i"]
 puts 0N!("def\n\000";::)
@@ -51,7 +55,7 @@ x:101b
 .ffi.cf[(" ";`qsort)]0N!(x;`int$count x;1i;(cmp;"BB";"i"))
 
 x:`c`a`b;
-// symbols are pointers - size of pointer is .ffi.nil length
+// symbols are pointers - size of pointer is .ffi.ptrsize
 .ffi.cf[(" ";`qsort)]0N!(x;`int$count x;`int$.ffi.ptrsize;(cmp;"SS";"i")) 
 .z.i=.ffi.cf[`getpid]()
 // get parrent pid

@@ -13,14 +13,16 @@ We are grateful to @abalkin for allowing us to adapt and expand on his original 
 
 - Operating system: Linux, macOS 10.12+, Windows 7+
 - kdb+ v3.4 or higher
-- libffi 3.1+ as per instructions
+- libffi 3.1+ as per instructions. RHEL/CentOS 6/7 provided libffi 3.0.5 can be used as well.
 
-environment                          | installation
--------------------------------------|----------------------------------------------------------
-Ubuntu Linux 64-bit with 64-bit kdb+ | `sudo apt-get install libffi-dev`
-Ubuntu Linux 64-bit with 32-bit kdb+ | `sudo apt-get install libffi-dev:i386`
-macOS                                | (no action required)
-Windows                              | (no action required)
+environment                    | installation
+-------------------------------|----------------------------------------------------------
+Ubuntu Linux with 64-bit kdb+  | `sudo apt-get install libffi-dev`
+Ubuntu Linux with 32-bit kdb+  | `sudo apt-get install libffi-dev:i386`
+RHEL/CentOS  with 64-bit kdb+  | `sudo yum install libffi-devel`
+RHEL/CentOS  with 32-bit kdb+  | `sudo yum install glibc-devel.i686 libgcc.i686 libffi-devel.i686`
+macOS                          | (no action required)
+Windows                        | (no action required)
 
 
 ## Installation
@@ -32,7 +34,8 @@ Download the appropriate release archive from [releases](../../releases/latest) 
 
 environment     | action
 ----------------|---------------------------------------------------------------------------------------
-Linux and macOS | `tar xzvf ffi_osx-v0.9.2.tar.gz -C $QHOME --strip 1`
+Linux           | `tar xzvf ffi_linux-v*.tar.gz -C $QHOME --strip 1`
+macOS           | `tar xzvf ffi_osx-v*.tar.gz -C $QHOME --strip 1`
 Windows         | Open the archive and copy content of the `ffi` folder (`ffi\*`) to `%QHOME%` or `c:\q`
 
 
@@ -75,6 +78,7 @@ f                | double
 g, s             | uint8*
 `" "` (space)    | void (only as return type)
 r                | raw pointer
+l                | size of pointer(size_t)
 k                | K object
 uppercase letter | pointer to the same type
 
@@ -87,6 +91,9 @@ function | purpose
 `errno`  | return current `errno` global on \*nix OS
 `kfn`    | bind the function which returns and accepts K objects in current process. Similar to `2:`
 `ext`    | append shared library extension for current platform to library name. On Linux ```.ffi.ext[`libm]~`libm.so```
+`cvar`   | read global variable from the library ```.ffi.cvar`timezone```
+`ptrsize`| length of pointer in bytes on current platform
+`nil`    | null value on current platform
 
 Function arguments should be passed as a generic list to `cf`, `call`, and the function created by `bind`.
 
