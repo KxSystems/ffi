@@ -1,10 +1,14 @@
 # FFI for kdb+
 
-`ffiq` is an extension to kdb+ for loading and calling dynamic libraries using pure `q`. It is part of the [_Fusion for kdb+_](http://code.kx.com/q/interfaces/fusion/) interface collection.
+`ffiq` is an extension to kdb+ for loading and calling dynamic libraries using pure `q`. 
+It is part of the [_Fusion for kdb+_](http://code.kx.com/q/interfaces/fusion/) interface collection.
 
 The main purpose of the library is to build stable interfaces on top of external libraries, or to interact with the operating system from `q`. No compiler toolchain or writing C/C++ code is required to use this library.
 
 We are grateful to @abalkin for allowing us to adapt and expand on his original codebase. 
+
+Please [report issues](https://github.com/KxSystems/ffi/issues) in this repository.
+
 
 
 ## Requirements
