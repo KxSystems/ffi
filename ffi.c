@@ -46,9 +46,10 @@ void *ffi_closure_alloc(size_t size, void **code) {
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define FFI_ALIGN(v, a) (((((size_t)(v)) - 1) | ((a)-1)) + 1)
 
-#define VD -3   // void
-#define RP 127  // raw pointer
 #define ER -128 // error
+#define VD -3   // void
+#define FO 112  // foreign
+#define RP 127  // raw pointer
 #define SZ sizeof(V *)
 
 /*
@@ -222,6 +223,10 @@ Z V *getvalue(I t, K x, V **p) {
   I ta= x->t;
   if(t == RP)
     R((sizeof(V *) == 4) ? (V **)&x->i : (V **)&x->j);
+  if(ta == FO && x->n == 2) {
+    *p= kK(x)[1];
+    R(V *) p;
+  }
   if(ta < 0)
     R(V *) & x->g;
   if(ta == 0)
@@ -436,13 +441,13 @@ EXP K ern(K x) {
 EXP K deref(K x, K rtypes, K kidx) {
   G *p;
   J i, idx, offset;
-  //size_t *offsets; // for ffi_get_struct_offsets
+  // size_t *offsets; // for ffi_get_struct_offsets
   K r;
   ffi_cif cif;
   ffi_type test_struct_type;
   ffi_type **elems;
-  if((!((x->t == KJ && SZ == 8) || (x->t == KI && SZ == 4))) && rtypes->t != KC &&
-     kidx->t != -KJ) {
+  if((!((x->t == KJ && SZ == 8) || (x->t == KI && SZ == 4))) &&
+     rtypes->t != KC && kidx->t != -KJ) {
     return krr("type: [r;C;j] expected");
   }
   if(SZ == 4 && x->t == -KI) {
@@ -458,7 +463,7 @@ EXP K deref(K x, K rtypes, K kidx) {
   test_struct_type.alignment= 0;
   test_struct_type.type= FFI_TYPE_STRUCT;
   elems= (ffi_type **)calloc(rtypes->n + 1, SZ);
-  //offsets= calloc(rtypes->n, sizeof(size_t));
+  // offsets= calloc(rtypes->n, sizeof(size_t));
   for(i= 0; i < rtypes->n; ++i) {
     elems[i]= chartotype(kC(rtypes)[i]);
   }
