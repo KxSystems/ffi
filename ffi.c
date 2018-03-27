@@ -277,7 +277,7 @@ EXP K bindf(K f, K a, K r) {
   if(!func)
     R r0(bound), (K)0;
   fp= ktn(KG, sizeof(V *));
-  memcpy(kG(fp), &func, fp->n);
+  memmove(kG(fp), &func, fp->n);
   R k(0, ".ffi.call", bound, fp, (K)0);
 }
 
@@ -332,7 +332,7 @@ Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
     return; // error occured during callback from c
   if(r->t < 0) {
     sz= MIN(cif->rtype->size, gettype(r->t)->size);
-    memcpy(resp, &r->k, sz);
+    memmove(resp, &r->k, sz);
   }
   r0(r);
 }
