@@ -324,7 +324,7 @@ Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   for(i= 0; i != n; ++i) {
     kK(x)[i]= kvalue(ktype(kC(t)[i]), args[i]);
   }
-  r= dot(kK((K)userdata)[0], x);
+  r= dot(kK((K)userdata)[0], n>8?knk(1,x):x);
   r0(x);
   if(cif->rtype != &ffi_type_void)
     memset(resp, 0, cif->rtype->size);
