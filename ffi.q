@@ -1,4 +1,4 @@
-.ffi:(hsym[`$string[.z.o],"/ffi"] 2:`ffi,1)[]
+.ffi:({lp:first[` vs hsym `$x[-3+count x:get .z.s]];$[null lp;`ffi;` sv lp,.z.o,`ffi]}[] 2:`ffi,1)[]
 \d .ffi
 // prepare calling interface with arg_types and return type 
 cif0:{[arg_types;ret_type] cif[args_types;ret_type]}
