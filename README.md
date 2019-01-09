@@ -14,7 +14,7 @@ Please [report issues](https://github.com/KxSystems/ffi/issues) in this reposito
 ## Requirements
 
 - Operating system: Linux, macOS 10.12+, Windows 7+
-- kdb+ v3.4 or higher
+- kdb+ v3.5 or higher
 - libffi 3.1+ as per instructions. RHEL/CentOS 6/7 provided libffi 3.0.5 can be used as well.
 
 environment                    | installation
