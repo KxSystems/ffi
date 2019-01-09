@@ -2,14 +2,14 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
   FFI_INCLUDE=`pkg-config --cflags libffi`
 	FFI_LIBS=`pkg-config --libs libffi`
-	OPTS=-g3 -shared -fPIC -D_GNU_SOURCE -ldl -Wall
+	OPTS=-g3 -shared -fPIC -D_GNU_SOURCE -ldl -Wall -include _memcpy.h
 	CC=gcc
 	QP=l
 endif
 ifeq ($(UNAME_S),Darwin)
   FFI_INCLUDE=-I /usr/include/ffi
 	FFI_LIBS=-lffi
-	OPTS=-g -shared -DSYSFFI -undefined dynamic_lookup  -mmacosx-version-min=10.12 -ldl -Wall
+	OPTS=-g -shared -DSYSFFI -undefined dynamic_lookup -mmacosx-version-min=10.12 -ldl -Wall # -arch i386 -arch x86_64
 	CC=clang
 	QP=m
 endif
