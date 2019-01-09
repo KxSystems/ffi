@@ -223,7 +223,7 @@ Z V *getvalue(I t, K x, V **p) {
   I ta= x->t;
   if(t == RP)
     R((sizeof(V *) == 4) ? (V **)&x->i : (V **)&x->j);
-  if(ta == FO && x->n == 2) {
+  if(ta == FO && x->n > 1) {
     *p= kK(x)[1];
     R(V *) p;
   }
@@ -324,7 +324,7 @@ Z V closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   for(i= 0; i != n; ++i) {
     kK(x)[i]= kvalue(ktype(kC(t)[i]), args[i]);
   }
-  r= dot(kK((K)userdata)[0], n>8?knk(1,x):x);
+  r= dot(kK((K)userdata)[0], n>8?(x=knk(1,x)):x);
   r0(x);
   if(cif->rtype != &ffi_type_void)
     memset(resp, 0, cif->rtype->size);
