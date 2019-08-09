@@ -3,7 +3,7 @@
 
 
 `ffiq` is an extension to kdb+ for loading and calling dynamic libraries using pure `q`. 
-It is part of the [_Fusion for kdb+_](http://code.kx.com/v2/interfaces/fusion/) interface collection.
+It is part of the [_Fusion for kdb+_](https://code.kx.com/v2/interfaces/fusion/) interface collection.
 
 The main purpose of the library is to build stable interfaces on top of external libraries, or to interact with the operating system from `q`. No compiler toolchain or writing C/C++ code is required to use this library.
 
@@ -47,5 +47,5 @@ Windows         | Open the archive and copy content of the `ffi` folder (`ffi\*`
 
 ## API
 
-See [code.kx.com/v2/interfaces/ffi](http://code.kx.com/v2/interfaces/ffi/) for documentation.
+See [code.kx.com/v2/interfaces/ffi](https://code.kx.com/v2/interfaces/ffi/) for documentation.
 
