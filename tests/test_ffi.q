@@ -29,8 +29,6 @@ puts:.ffi.bind[`puts; "s"; "i"];
 puts ("def\n\000"; ::);
 puts (`abc; ::);
 
-//show .ffi.call[.ffi.cif["Gi";"i"];`printf] ("Hello %d\n\000";42);
-
 //register func on handle
 valueLater:();
 

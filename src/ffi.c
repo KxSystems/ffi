@@ -2,6 +2,10 @@
 //                        Preamble                       //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
+//%% kdb+ Version %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
+
+#define KXVER 3
+
 //%% Platform Setting %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
 #if((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)))
@@ -36,7 +40,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define KXVER 3
 #include "k.h"
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -47,7 +50,6 @@
 #define VD -3   // void
 #define FO 112  // foreign
 #define RP 127  // raw pointer
-#define SZ sizeof(V *)
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //                         Macros                        //

@@ -19,6 +19,12 @@
 //                            Load Functions                            //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
+/
+* Use [Rmath](https://cran.r-project.org/doc/manuals/r-release/R-admin.html#The-standalone-Rmath-library).
+* For linux you can install libRmath.so by:
+* - Ubuntu:         $ sudo apt-get install r-mathlib
+* - CentOS/RedHat:  $ sudo yum install libRmath
+\
 .rm.set_seed:.ffi.bind[`libRmath.so`set_seed; "ii"; " "];
 .rm.norm_rand:.ffi.bind[`libRmath.so`norm_rand; ""; "f"];
 .rm.unif_rand:.ffi.bind[`libRmath.so`unif_rand; ""; "f"];
