@@ -46,9 +46,13 @@
 //                    Global Variables                   //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
-#define ER -128 // error
-#define VD -3   // void
-#define FO 112  // foreign
+/// Indicate q error type
+#define ER -128
+/// Indicator of void type
+#define VD -3
+/// Indicator of q forreign type
+#define FO 112
+/// Indicator of raw pointer type
 #define RP 127  // raw pointer
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -57,6 +61,13 @@
 
 //%% Utility %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
+/**
+ * @brief Return minimum of two arguments.
+ * @param a: argument1
+ * @param b: argument2
+ * @note
+ * Arguments must implement `<` operator.
+ */
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define FFI_ALIGN(v, a) (((((size_t)(v)) - 1) | ((a)-1)) + 1)
 
@@ -780,7 +791,7 @@ EXP K call_function(K returntype_and_func, K args){
  * @brief Search a variable with a given name and convert it to K object.
  * @param rtype_and_var:
  * - symbol: Variable name
- * - tuple of (char; symbol): (type character of returned value; variable name)
+ * - tuple of (char; symbol): (type character of returned value; variable name or list of shared object name and variable name)
  */
 EXP K cvar(K rtype_and_var) {
   void *v;
@@ -815,12 +826,14 @@ EXP K cvar(K rtype_and_var) {
 }
 
 /**
- * @brief Bind foreign function in current process which takes `n` arguments and returns K object.
+ * @brief Bind foreign function which takes K and returns K object in current process which takes `n` arguments and returns q function.
  * @param funcname: Name of function
  * @param n: The number of arguments.
  * @return K: Function bound.
+ * @note
+ * Cannot find example anywhere. Seems not working. Probably garbage.
  */ 
-EXP K as_qfunc(K funcname, K n) {
+EXP K bind_K_function(K funcname, K n) {
   
   if(funcname->t != -KS || (n->t != -KI && n->t != -KJ)){
     // Function name is not symbol or `n` is not a number.
@@ -867,7 +880,7 @@ EXP K loadlib(K library) {
 }
 
 /**
- * @brief Set a given number on `errno`. Return old value.
+ * @brief Set a given number on `errno` and returns old `errno` value. If the argument is null or non-int value it returns current `errno` value. 
  * @param n: New `errno` value. This value must be int.
  * @return K: Old `errno` value.
  * @note
@@ -947,29 +960,3 @@ EXP K deref(K x, K returntypes, K kidx) {
 
   return derefed;
 }
-
-// Meaningless garbage. Don't need to hold functions in dictionary.
-/*
-#define N 10
-#define FFIQ_ENTRY(i, name, def)                                               \
-  kS(x)[i]= ss(name);                                                          \
-  kK(y)[i]= def
-#define FFIQ_FUNC(i, name, nargs) FFIQ_ENTRY(i, #name, dl(name, nargs))
-#define FFIQ_ENUM(i, name) FFIQ_ENTRY(i, #name, ki(name))
-EXP K ffi(K x) {
-  K y= ktn(0, N);
-  x= ktn(KS, N);
-  FFIQ_ENTRY(0, "", k(0, "::", (K)0));
-  FFIQ_FUNC(1, cif, 2);
-  FFIQ_FUNC(2, bind, 3);
-  FFIQ_FUNC(3, call, 3);
-  FFIQ_FUNC(4, call_function, 2);
-  FFIQ_FUNC(5, as_qfunc, 2);
-  FFIQ_FUNC(6, set_errno, 1);
-  FFIQ_FUNC(7, deref, 3);
-  FFIQ_FUNC(8, loadlib, 1);
-  FFIQ_FUNC(9, cvar, 1);
-
-  R xD(x, y);
-}
-*/

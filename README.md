@@ -7,7 +7,7 @@ The main purpose of the library is to build stable interfaces on top of external
 
 We are grateful to @abalkin for allowing us to adapt and expand on his original codebase. 
 
-Please [report issues](https://github.com/KxSystems/ffi/issues) in this repository.
+Please [report issues](https://github.com/KxSystems/ffikdb/issues) in this repository.
 
 
 ## Requirements

@@ -70,7 +70,7 @@ betarand within 0 1
 
 // generate 100K N(0,1) random numbers
 norms:`float$();
-do[100000; gen:.rm.rnorm (1; 0f; 1f; ::); if[-9h ~ type gen; norms,: gen]];
+do[100000; gen:.rm.norm_rand (1; 0f; 1f; ::); if[-9h ~ type gen; norms,: gen]];
 
 // verify that avg and dev are 0 and 1
 show (avg; dev) @\: norms;

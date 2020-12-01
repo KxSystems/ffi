@@ -50,3 +50,6 @@ seq:101b
 .cstdlib.qsort (seq; `int$count seq; 1i; (cmp; "BB"; "i"); ::);
 show seq;
 
+seq:`c`a`b;
+.cstdlib.qsort (seq; `int$count seq; 8i; (cmp; "SS"; "i"); ::); 
+show seq;

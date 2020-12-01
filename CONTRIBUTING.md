@@ -43,6 +43,8 @@ In order to have your pull request approved in a timely manner, please provide c
 ### Additional Resources
 
 [Embedded document of libffi](https://github.com/libffi/libffi/blob/master/doc/libffi.texi)
+
 *Note: You need a proper application to open `.texi` file.*
+
 [KDB+ and q documentation](https://code.kx.com/q/)
 

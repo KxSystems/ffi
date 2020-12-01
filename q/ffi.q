@@ -20,7 +20,6 @@
 
 //%% Utility %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
-.ffi.asQFunc:`libffikdb 2: (`as_qfunc; 2);
 .ffi.cvar:`libffikdb 2: (`cvar; 1);
 .ffi.setErrno:`libffikdb 2: (`set_errno; 1);
 
@@ -29,8 +28,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
 .ffi.extension:{[] ("wlm"!`dll`so`dylib) first string .z.o};
-.ffi.nil:{$[.z.o like "?32";0i;0j]};
-.ffi.ptrsize:{$[.z.o like "?32";4;8]};
+.ffi.ptrsize:{$[.z.o like "?32"; 4i; 8i]};
 .ffi.os:{first string .z.o};
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -67,3 +65,5 @@
   .ffi.setErrno[n]
  };
 
+// This function is useless because null is now null, not 0i or 0j.
+// .ffi.nil:{$[.z.o like "?32";0i;0j]};
