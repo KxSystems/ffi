@@ -618,16 +618,6 @@ EXP K call(K cif, K func, K args){
     return krr("rank");
   }
 
-  // func is runtime address passed by `bind`. No check is necessary
-  /*
-  if(func->t == KG)
-    func= *(V **)kG(func);
-  else
-    func= lookupFunc(func);
-  if(!func)
-    R r0(args), (K)0;
-  */
-
   // Trim trailing (::)
   I argc = (args->n) - 1;
   void **values= calloc(argc, sizeof(void *));
@@ -703,7 +693,7 @@ EXP K bind(K funcname, K argtypes, K returntypes) {
  * @brief Call foreign function which has the given name with the given arguments after searching the foreign function.
  * @param returntype_and_func:
  * - symbol: Name of function
- * - tuple of (q type character of returned value)
+ * - tuple of (q type character of returned value; symbol name of a function or list of shared object and a function name)
  * @param args: List of arguments to be passed to the foreign function. This list must have (::) at the end.
  * @return K: Result of execution of the given function.
  */
@@ -715,15 +705,11 @@ EXP K call_function(K returntype_and_func, K args){
   if((args->t != 0) || (kK(args)[(args->n)-1]->t != 101)){
     // Argument is not a compound list
     return krr("type of arguments must be a compound list with (::) at the end");
-  }
-  else if(returntype_and_func->t != 0 && returntype_and_func->t != -KS){
-    // Neither of function name nor (return type character; function name) 
-    return krr("expected a function name or a tuple of (type character of returned value; function name)");
-  }   
+  }  
   else if(returntype_and_func->t == 0) {
     // tuple of (type character of returned value; function name)
     if(returntype_and_func->n != 2 || kK(returntype_and_func)[0]->t != -KC){
-      return krr("expected a function name or a tuple of (type character of returned value; function name)");
+      return krr("expected a function name or a tuple of (type character of returned value; function name or list of shared object and a function name)");
     }
 
     // Retrieve an integer type indicator from the given q type character of returned type 
@@ -735,12 +721,16 @@ EXP K call_function(K returntype_and_func, K args){
     // Get a pointer to the function with the given name and continue to processing  
     func= lookupFunc(kK(returntype_and_func)[1]);
   }
-  else if(returntype_and_func->t == -KS) {
-    // Function name was specified. Default return type is set int
+  else if(returntype_and_func->t == -KS || returntype_and_func->t == KS) {
+    // Function name or list of shared object and a function was specified. Default return type is set int
     returntype = -KI;
     // Get a pointer to the function with the given name and continue to processing 
     func= lookupFunc(returntype_and_func);
   }
+  else{
+    // None of function name, list of shared object and a function name and (return type character; function name or list of shared object and a function) 
+    return krr("expected a function name, or list of shared object and a function name, or a tuple of (type character of returned value; function name or list of shared object and a function name)");
+  } 
 
   // krr returns nullptr
   if(!(K) func){
@@ -797,14 +787,15 @@ EXP K cvar(K rtype_and_var) {
   void *v;
   H target_type;
 
-  if(rtype_and_var -> t == -KS) {
+  if(rtype_and_var -> t == -KS || rtype_and_var -> t == KS) {
+    // Variable name or list of shared object and variable name was provided.
     // Return type was not provided. Default is set int
     target_type = -KI;
   }
   else {
     if(rtype_and_var -> t != 0 || rtype_and_var -> n != 2 || kK(rtype_and_var)[0]->t != -KC){
       // Must be a tuple of (type character of returned value; function name)
-      return krr("expected a tuple of (type character of returned value; variable name)");
+      return krr("expected a tuple of (type character of returned value; variable name or list of shared object and variable name)");
     }
     // Retrieve proper integer q type indicator based on the q type character
     target_type = ktype(kK(rtype_and_var)[0]->g);

@@ -14,25 +14,39 @@ compiler: gcc
 before_install:
   # Set global flags
   - export FILE_ROOT=ffikdb
-  - export TESTS="False"
+  - export TESTS="True"
   # Install dependencies
-  # Remove libc6-dev libc6-dev-i386 for trial
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then
-      apt-get install libffi-dev libffi-dev:i386
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then
+      sudo apt-get install -y libffi-dev libffi-dev:i386;
+    elif [[ $TRAVIS_OS_NAME == "osx" ]]; then
+      cp /usr/include/ffi.h include/;
+    elif [[ $TRAVIS_OS_NAME == "windows" ]]; then
+      # Install dlfcn_win
+      mkdir cbuild;
+      wget https://github.com/dlfcn-win32/dlfcn-win32/archive/v1.2.0.tar.gz;
+      tar xvf v1.2.0.tar.gz -C ./cbuild --strip-components=1;
+      # Build and install to cbuild/install
+      mkdir cbuild/install;
+      mkdir cbuild/cmake/solution;
+      cd cbuild/cmake/solution;
+      #cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=../../install ..
+      cmake --build . --config Release
+      cmake --build . --config Release --target install
+      cd ../../..
+    else
+      echo "Unsupported OS.";
+      exit 1;
     fi
   # Set OS directory and license location
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then
-      QLIBDIR=l64
-      QLIC_KC=$L64
-    elif [[ $TRAVIS_OS_NAME == windows ]]; then
-      QLIBDIR=w64
-      QLIC_KC=$W64
-    elif [[ $TRAVIS_OS_NAME == osx ]]; then
-      QLIBDIR=m64
-      QLIC_KC=$M64
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then
+      QLIBDIR=l64;
+      QLIC_KC=$L64;
+    elif [[ $TRAVIS_OS_NAME == "windows" ]]; then
+      QLIBDIR=w64;
+      QLIC_KC=$W64;
     else
-      echo "Unsupported OS."
-      exit 1
+      QLIBDIR=m64;
+      QLIC_KC=$M64;
     fi
   - export QLIBDIR
   - export QLIC_KC
@@ -44,50 +58,50 @@ before_install:
 
   # Prepare Test
   - if [[ $TESTS == True && "x$OD" != "x" && "x$QLIC_KC" != "x" ]]; then
-      curl -o qhome/q.zip -L $OD
-      unzip -d qhome qhome/q.zip
-      echo -n $QLIC_KC | base64 --decode > qhome/kc.lic
+      curl -o qhome/q.zip -L $OD;
+      unzip -d qhome qhome/q.zip;
+      echo -n $QLIC_KC | base64 --decode > qhome/kc.lic;
     else
-      echo "No kdb+, no tests"
+      echo "No kdb+, no tests";
     fi
   
   # Set Release Package
   - if [[ $TRAVIS_OS_NAME == windows ]]; then
-      export FILE_TAIL=".zip"
+      export FILE_TAIL=".zip";
     else
-      export FILE_TAIL=".tgz"
+      export FILE_TAIL=".tgz";
     fi
   - export FILE_NAME=${FILE_ROOT}-${TRAVIS_OS_NAME}-${TRAVIS_BRANCH}.${FILE_TAIL}
 
   # Build
-  - mkdir build
+  - mkdir build && cd build
   - if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-      cmake -G "Visual Studio 15 2017 Win64" ..
-      cmake --build . --config Release
-      cmake --build . --config Release --target install
-      cd ../
+      cmake -G "Visual Studio 15 2017 Win64" ..;
+      cmake --build . --config Release;
+      cmake --build . --config Release --target install;
+      cd ../;
     else
-      cmake -DCMAKE_BUILD_TYPE=Release ..
-      make
-      make install
-      cd ../
+      cmake -DCMAKE_BUILD_TYPE=Release ..;
+      make;
+      make install;
+      cd ../;
     fi
 
 script:
   # Test
-  - if [[ $TESTS == True && "x$OD" != "x" && "x$QLIC_KC" != "x" ]]; then
-      curl -o test.q -L https://github.com/KxSystems/hdf5/raw/master/test.q
-      if [[ $TRAVIS_OS_NAME == windows ]]; then
-        q test.q tests_win/ -q
+  - if [[ $TESTS == "True" && "x$OD" != "x" && "x$QLIC_KC" != "x" ]]; then
+      curl -o test.q -L https://github.com/KxSystems/hdf5/raw/master/test.q;
+      if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        q test.q tests_win/ -q;
       else
-        q test.q tests/ -q
+        q test.q tests/ -q;
       fi
     fi
   # Build Package
-  - if [[ $TRAVIS_OS_NAME == windows ]]; then
-      7z a -tzip -r ${FILE_NAME} build/${FILE_ROOT}
+  - if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+      7z a -tzip -r ${FILE_NAME} build/${FILE_ROOT};
     else
-      tar czf ${FILE_NAME} build/${FILE_ROOT}
+      tar -czf ${FILE_NAME} build/${FILE_ROOT};
     fi
 
 deploy:
@@ -96,5 +110,5 @@ deploy:
   file: ${FILE_NAME}
   on:
     tags: true
-    condition: $TRAVIS_OS_NAME == windows || $TRAVIS_OS_NAME == osx || ($TRAVIS_OS_NAME == linux && $TRAVIS_DIST == xenial)
+    condition: $TRAVIS_OS_NAME == "windows" || $TRAVIS_OS_NAME == "osx" || ($TRAVIS_OS_NAME == "linux" && $TRAVIS_DIST == "xenial")
   skip_cleanup: true

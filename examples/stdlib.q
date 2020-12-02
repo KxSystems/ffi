@@ -51,5 +51,5 @@ seq:101b
 show seq;
 
 seq:`c`a`b;
-.cstdlib.qsort (seq; `int$count seq; 8i; (cmp; "SS"; "i"); ::); 
+.cstdlib.qsort (seq; `int$count seq; .ffi.ptrsize[]; (cmp; "SS"; "i"); ::); 
 show seq;

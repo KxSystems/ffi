@@ -14,9 +14,12 @@ file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_S
 
 # Dependency for platform
 if(MSVC)
+    find_package(dlfcn-win32 REQUIRED)
+    set(CMAKE_DL_LIBS dlfcn-win32::dl)
     file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/w64/q.lib" "${CMAKE_BINARY_DIR}/q.lib")
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
         "${CMAKE_BINARY_DIR}/q.lib"
+        ${CMAKE_DL_LIBS}
         "libdl.so"
         "libffi.so"
     )

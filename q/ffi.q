@@ -64,6 +64,3 @@
   -1 "This function will vanish from the ver 0.13. Use .ffi.setErrno instead.";
   .ffi.setErrno[n]
  };
-
-// This function is useless because null is now null, not 0i or 0j.
-// .ffi.nil:{$[.z.o like "?32";0i;0j]};
