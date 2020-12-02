@@ -263,7 +263,6 @@ static K kvalue(I targettype, void *ret) {
   else if(targettype == KC) {
     // string
     S rs=(S*) ret;
-    printf("GOT STRING!!%s\n", *rs);
     r= ktn(KC, 1 + strlen(rs));
     memmove(kG(r), rs, r->n);
     return r;
@@ -449,7 +448,7 @@ void *lookupFunc(K funcname) {
  * @param cif: Structure storing type information of returned value from foreign function.
  * @param resp: Holder of returned value from the execution of the foreign function.
  * @param args: Arguments to be passed to the foreign function.
- * @param userdata: tuple of (function; characters denoting q types of arguments)
+ * @param userdata: tuple of (function; characters denoting q types of arguments) or (function; characters denoting q types of arguments; character denoting q type of returned value)
  */
 static void closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   
@@ -461,7 +460,18 @@ static void closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   K qtypes = kK((K)userdata)[1];
   for(I i= 0; i != n; ++i) {
     // Wrap arguments as K objects acording to given char q type indicators
-    kK(args_as_k)[i]= kvalue(ktype(kC(qtypes)[i]), args[i]);
+    I closure_argtype=ktype(kC(qtypes)[i]);
+    if(closure_argtype == ER){
+      // Unsupported argument type was specified for closure arguments
+      // Set error to `resp`
+      resp=krr("unsupported argument type for closure");
+      // Escape execution
+      return;
+    }
+    else{
+      kK(args_as_k)[i]= kvalue(closure_argtype, args[i]);
+    }
+    
   }
 
   // Apply function to the list of arguments
@@ -479,7 +489,11 @@ static void closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
 
   if(!res){
     // Null result from `dot` (error occured during callback)
-    return;
+    // Capture error and print fpr transparency. The closure execution failure will likely to lead to crash of C function.
+    K error=ee(res);
+    printf("closure execution error: %s\n", error->s);
+    // Set error object on `resp`
+    resp=krr(error->s);
   }
     
   if(res->t < 0) {
@@ -493,12 +507,15 @@ static void closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
 }
 
 /**
- * @brief
- * @param func_and_types: Tuple of (function; types of arguments) or (function; type characters of arguments; type character of returned value)
+ * @brief Build a closure based on argument types (and type of returned value) which are contained in `func_and_types`.
+ * @param func_and_types: Tuple of (q function; types of arguments) or (q function; type characters of arguments; type character of returned value).
+ *  If type of returned value is not provided, it is set null.
  * @return void**: Pointer to a closure whose type is `ffi_closure*`.
  * @note
  * - Closures are not free'd as maybe used for callbacks/etc from C.
  * - `closure_ptr`, `cif`, `atypes` will be retained until process exits
+ * - This function is called when q callback function is provided as an argument to foreign function. In other words, 'k' is specified as argument type
+ *  for `bind` or `call_function`.
  */
 static void *getclosure(K func_and_types, void **UNUSED(unused)) {
   ffi_status rc;

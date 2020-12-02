@@ -14,6 +14,7 @@ Please [report issues](https://github.com/KxSystems/ffikdb/issues) in this repos
 
 - Operating system: Linux, macOS 10.12+, Windows 7+
 - kdb+ v3.5 or higher
+- [dlfcn-win32](https://github.com/dlfcn-win32/dlfcn-win32) (for Windows)
 - libffi 3.1+ as per instructions. RHEL/CentOS 6/7 provided libffi 3.0.5 can be used as well.
 
 environment                    | installation
