@@ -7,7 +7,7 @@ The main purpose of the library is to build stable interfaces on top of external
 
 We are grateful to @abalkin for allowing us to adapt and expand on his original codebase. 
 
-Please [report issues](https://github.com/KxSystems/ffikdb/issues) in this repository.
+Please [report issues](https://github.com/KxSystems/ffi/issues) in this repository.
 
 
 ## Requirements
@@ -63,9 +63,9 @@ See [code.kx.com/q/interfaces/ffi](https://code.kx.com/q/interfaces/ffi/) for do
 
 The FFI interface is provided here under an Apache 2.0 license.
 
-If you find issues with the interface or have feature requests please consider raising an issue [here](https://github.com/KxSystems/ffikdb/issues).
+If you find issues with the interface or have feature requests please consider raising an issue [here](https://github.com/KxSystems/ffi/issues).
 
-If you wish to contribute to this project please follow the contributing guide [here](https://github.com/KxSystems/ffikdb/blob/master/CONTRIBUTING.md).
+If you wish to contribute to this project please follow the contributing guide [here](https://github.com/KxSystems/ffi/blob/master/CONTRIBUTING.md).
 
 ## Unsupported Functionality
 
