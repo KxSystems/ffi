@@ -1,60 +1,50 @@
-## Requirements
- - Linux, macOS, Win7(with VS2015.3)
- - libffi (see installation instructions below)
- - Latest kdb+
+# How to contribute
 
-### Installation
-#### Dependencies
-On Ubuntu 
-```
-sudo apt-get install libffi-dev
-sudo apt install libffi-dev:i386 # to install 32bit version on 64bit OS
-```
-On masOS
-```
-brew install libffi     // at the time of writing is libffi 3.2.1
-```
-Optional: To install MKL go ahead to https://software.intel.com/en-us/mkl
-```
-/opt/intel/mkl/bin/mklvars.sh intel64
-```
+Thanks for choosing to contribute to this project.
 
-On Windows
+If you haven't already, please view the [README](README.md) for an introduction to the aims and intended use of this project.
 
-Windows dependencies are pre-packaged with repository as static libraries. 
-You only need to download latest version of q bindings for windows(q.lib).
-```
-mkdir -p win/w32 win/w64
-wget https://github.com/KxSystems/kdb/raw/master/w64/q.lib -O win/w64/q.lib
-wget https://github.com/KxSystems/kdb/raw/master/w32/q.lib -O win/w32/q.lib
-```
+## Contributing as a user (non-development)
 
-Prepackaged libraries were compiled and exported using `vcpkg` using following commands
-```
-.\vcpkg install libffi:x64-windows-static dlfcn-win32:x64-windows-static
-.\vcpkg install libffi:x86-windows-static dlfcn-win32:x86-windows-static
+As a non-developer, you can still contribute in many ways. We are especially interesting in hearing from people using the project in production/working environments.
 
-.\vcpkg --raw export dlfcn-win32:x86-windows-static  dlfcn-win32:x64-windows-static libffi:x86-windows-static libffi:x64-windows-static
+If you spot any problems, please raise an issue within the project and provide as much information as possible. This should enable us to recreate the issue and check that any fix is appropriate.
 
-cp -rp vcpkg-export-<>/installed/* $FFIQBUILD/win/
-```
+Feature requests can also be raised in the project as a new issue. Please detail what you may wish to be added, why you would benefit from it and any other information that may be relevant.
 
-Note: that it is possible to compile ffiq with libffi provided by nuget(and using `nuget restore`). Unfortunately, this will require additional modifications to `ffi.c` as nuget libffi doesn't export several critical constants. This is fixed in [vcpkg](https://github.com/Microsoft/vcpkg/blob/master/ports/libffi/export-global-data.patch). `dlfcn` is not available on nuget and will need additional stubs in `ffi.c`.
+You may also wish to 'star' the project (click the star link on the project main page) to show your appreciation.
 
-#### Library
-On Linux and macOS
+## Contributing as a developer
 
-```
-make all64   # default OS combo(x64)
-make all32   # compile as 32 bit libraries
-```
+### Getting Started
 
-Windows
+If you are looking to lend your development skills to the project, you can check the projects issue list to see what people may be looking for. Developers who already have an idea of what they might like to change should consider creating an issue to indicate to others of the work they are undertaking and commence any discussion on the possible solutions.
 
-Make sure you use correct VisualC++ compiler version. `x86` for w32 and `x64` for w64.
-```
-# to compile 32bit dll
-nmake /fwin\Makefile all32 
-# to compile 64bit dll
-nmake /fwin\Makefile all64
-```
+### Making Changes
+
+Please fork the projects master branch to your own account. Using your fork, you are free to create changes or create branches in isolation.
+
+The following provides a good general guide ['Beginners Guide To Contributing'](https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/)
+
+Please keep your fork up-to date to reduce the risk of conflicts occurring when your come to submit any changes.
+
+It can also be worth considering if your changes may also require changes to documentation or dependent systems.
+
+### Submitting Changes
+
+When committing changes, please provide a descriptive commit comment of why the change was made (e.g. 'fixed bug' is not a suitable comment as it doesn't describe which bug).  
+
+You can link to a relevant issue in a commit comment by referencing the issue number prefixed with a '#'.
+
+After pushing to your fork, submit a pull request against the main projects master branch. 
+
+In order to have your pull request approved in a timely manner, please provide comments on the pull request that details what was changed & for which reasons. The complexity or size of the change indicate the size of the descriptions required, in order for the reviewer to get up to speed as quick as possible.
+
+### Additional Resources
+
+[Embedded document of libffi](https://github.com/libffi/libffi/blob/master/doc/libffi.texi)
+
+*Note: You need a proper application to open `.texi` file.*
+
+[KDB+ and q documentation](https://code.kx.com/q/)
+
