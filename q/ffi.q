@@ -15,13 +15,13 @@
 
 //%% Main Interface %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
-.ffi.bind:`libffikdb 2: (`bind; 3);
-.ffi.callFunction:`libffikdb 2: (`call_function; 2);
+.ffi.bind:`ffikdb 2: (`bind; 3);
+.ffi.callFunction:`ffikdb 2: (`call_function; 2);
 
 //%% Utility %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
-.ffi.cvar:`libffikdb 2: (`cvar; 1);
-.ffi.setErrno:`libffikdb 2: (`set_errno; 1);
+.ffi.cvar:`ffikdb 2: (`cvar; 1);
+.ffi.setErrno:`ffikdb 2: (`set_errno; 1);
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //                           Other Utilities                            //
@@ -35,7 +35,7 @@
 //                 Load for internal Reason (DO NOT CALL)               //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
-.ffi.call:`libffikdb 2: (`call; 3);
+.ffi.call:`ffikdb 2: (`call; 3);
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //                             Deprecated                               //

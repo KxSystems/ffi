@@ -1,5 +1,10 @@
 ##%% Compilation %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
+# Default option is Release
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # Specify target shared library
 add_library(${MY_LIBRARY_NAME} SHARED
     ffi.c
@@ -35,6 +40,13 @@ target_include_directories(${MY_LIBRARY_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )
 
+# For MacOS include /usr/include
+if(APPLE)
+  target_include_directories(${MY_LIBRARY_NAME} PRIVATE
+    /usr/include/ffi
+  )
+endif()
+  
 # Compile option
 target_compile_options(${MY_LIBRARY_NAME} PRIVATE
     # kdb+ version
@@ -50,6 +62,16 @@ target_compile_options(${MY_LIBRARY_NAME} PRIVATE
     $<$<CONFIG:Debug>: -O0 -g>
 
 )
+
+# Shared library prefix and suffix
+# ex.) telegrafkdb.so for linux
+# Suffix must be `.so` for Mac
+if(APPLE)
+  set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+endif()
+
+set_target_properties(${MY_LIBRARY_NAME} PROPERTIES SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+set_target_properties(${MY_LIBRARY_NAME} PROPERTIES PREFIX "")
 
 ##%% Installation %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
@@ -70,9 +92,12 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(BITNESS 64)
 endif()
 
-# Install release version
-install(TARGETS ${MY_LIBRARY_NAME} DESTINATION "${CMAKE_BINARY_DIR}/${OSFLAG}${BITNESS}/")
+# Copy built shared object after build instead of during installation
+add_custom_command(TARGET ${MY_LIBRARY_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${MY_LIBRARY_NAME}>" ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/${MY_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
+    DEPENDS ${MY_LIBRARY_NAME}
+)
 
 # Install package at release and copy shared object to QHOME
-install(TARGETS ${MY_LIBRARY_NAME} DESTINATION "$ENV{QHOME}/${OSFLAG}${BITNESS}/" CONFIGURATIONS Release)
-install(TARGETS ${MY_LIBRARY_NAME} DESTINATION "${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/" CONFIGURATIONS Release)
+install(TARGETS ${MY_LIBRARY_NAME} DESTINATION $ENV{QHOME}/${OSFLAG}${BITNESS}/ CONFIGURATIONS Release)

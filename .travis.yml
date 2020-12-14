@@ -19,7 +19,7 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then
       sudo apt-get install -y libffi-dev libffi-dev:i386;
     elif [[ $TRAVIS_OS_NAME == "osx" ]]; then
-      cp /usr/include/ffi.h include/;
+      echo "Utilize system ffi for Mac OSX.";
     elif [[ $TRAVIS_OS_NAME == "windows" ]]; then
       # Install dlfcn_win
       mkdir cbuild;

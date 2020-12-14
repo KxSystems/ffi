@@ -7,15 +7,15 @@ project(ffikdb C)
 # Set library name
 set(MY_LIBRARY_NAME ffikdb)
 
-# Set default compile flag as Debug
+# Default option is Release
 if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Debug)
+	set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Sub directory to look into
 add_subdirectory(src)
 
-# Install package at release
-install(FILES README.md LICENSE DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME} CONFIGURATIONS Release)
-install(DIRECTORY examples DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME} CONFIGURATIONS Release)
-install(DIRECTORY q DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME} CONFIGURATIONS Release)
+# Build package at release
+file(COPY README.md LICENSE DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME})
+file(COPY examples/ DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/examples/)
+file(COPY q/ DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/q/)

@@ -77,7 +77,7 @@
 
 //%% OS Specific Functions %%//vvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
-#if defined(MACOSX) && defined(SYSFFI)
+#if defined(__APPLE__)
 /**
  * @brief As per manual ffi_prep_closure on osx.
  * @note
