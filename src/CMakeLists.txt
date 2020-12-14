@@ -11,8 +11,8 @@ add_library(${MY_LIBRARY_NAME} SHARED
 )
 
 # Search dependency
-set(libdl.so_DIR $ENV{LD_LIBRARY_PATH})
-set(libffi.so_DIR $ENV{LD_LIBRARY_PATH})
+set(${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
+set(${CMAKE_SHARED_LIBRARY_PREFIX}ffi${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
 
 # Download k.h
 file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_SOURCE_DIR}/include/k.h")
@@ -25,13 +25,13 @@ if(MSVC)
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
         "${CMAKE_BINARY_DIR}/q.lib"
         ${CMAKE_DL_LIBS}
-        "libdl.so"
-        "libffi.so"
+        dl.dll
+        ffi.dll
     )
 else()
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
-        "libdl.so"
-        "libffi.so"
+        libdl.so
+        libffi.so
     )
 endif()
 
@@ -45,6 +45,8 @@ if(APPLE)
   target_include_directories(${MY_LIBRARY_NAME} PRIVATE
     /usr/include/ffi
   )
+  # Newer version of OSX needs to install libffi
+  find_package(libffi)
 endif()
   
 # Compile option
