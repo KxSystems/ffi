@@ -31,8 +31,6 @@ before_install:
       export PATH=${DL_INSTALL_DIR}/bin:${PATH};
       export PATH=${FFI_INSTALL_DIR}/lib:${PATH};
       export PATH=${FFI_INSTALL_DIR}/bin:${PATH};
-      echo $FFI_INSTALL_DIR;
-      echo $DL_INSTALL_DIR;
     else
       echo "Unsupported OS.";
       exit 1;
