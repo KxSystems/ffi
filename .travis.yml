@@ -21,11 +21,6 @@ before_install:
       export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH};
     elif [[ $TRAVIS_OS_NAME == "osx" ]]; then
       echo "Utilize system ffi for Mac OSX.";
-      export FFI_INSTALL_DIR=/usr/include/ffi;
-      export LD_LIBRARY_PATH=${FFI_INSTALL_DIR}/lib:${LD_LIBRARY_PATH};
-      export PATH=${FFI_INSTALL_DIR}/lib:${PATH};
-      export PATH=${FFI_INSTALL_DIR}/bin:${PATH};
-      echo $FFI_INSTALL_DIR;
     elif [[ $TRAVIS_OS_NAME == "windows" ]]; then
       ./travis_setup.sh;
       export DL_INSTALL_DIR=cbuild/install;

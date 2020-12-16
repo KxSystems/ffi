@@ -28,10 +28,12 @@ if(WIN32)
     )
 elseif(APPLE)
     # Search ffi library from user install directory or /usr/lib by default (For OSX ver<=10.13)
-    find_library(FFI_LIBRARY
-        NAMES libffi
-        HINTS $ENV{FFI_INSTALL_DIR}/lib /usr/lib
-    )
+    if(DEFINED FFI_INSTALL_DIR)
+        find_library(FFI_LIBRARY
+            NAMES libffi
+            HINTS $ENV{FFI_INSTALL_DIR}/lib
+        )
+    endif()
 endif()
 
 # Dependency for platform
@@ -40,11 +42,6 @@ if(MSVC)
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
         "${CMAKE_BINARY_DIR}/q.lib"
         ${DL_LIBRARY}
-        ${FFI_LIBRARY}
-    )
-elseif(APPLE)
-    target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
-        libdl.dylib
         ${FFI_LIBRARY}
     )
 else()
@@ -62,8 +59,8 @@ target_include_directories(${MY_LIBRARY_NAME} PRIVATE
 if(APPLE)
     # FFI header exists under /usr/include/ffi for ver<=10.13
     target_include_directories(${MY_LIBRARY_NAME} PRIVATE
-        $ENV{FFI_INSTALL_DIR}/include
-        /usr/include/ffi
+        $<$<STREQUAL:"$ENV{FFI_INSTALL_DIR}","">: /usr/include/ffi>
+        $<$<NOT:$<STREQUAL:"$ENV{FFI_INSTALL_DIR}","">>: $ENV{FFI_INSTALL_DIR}/include>
     )
 elseif(WIN32)
     # Windows use installed dlfcn-win32 and installed libffi

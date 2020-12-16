@@ -162,7 +162,7 @@ $ export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
 
 #### MacOS
 
-For MacOS, if user machine is version<=10.13, there is no action needed. `libffi` should be in `/usr/include/ffi`. Otherwise `libffi` needs to be installed via `brew` command:
+For MacOS, if user machine is version<=10.13, `libffi` should be in `/usr/lib` and no action is required. Otherwise `libffi` needs to be installed via `brew` command:
 
 ```bash
 
