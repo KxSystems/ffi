@@ -23,21 +23,25 @@ before_install:
       echo "Utilize system ffi for Mac OSX.";
       export FFI_INSTALL_DIR=/usr/include/ffi;
       export LD_LIBRARY_PATH=${FFI_INSTALL_DIR}/lib:${LD_LIBRARY_PATH};
+      export PATH=${FFI_INSTALL_DIR}/lib:${PATH};
+      export PATH=${FFI_INSTALL_DIR}/bin:${PATH};
+      echo $FFI_INSTALL_DIR;
     elif [[ $TRAVIS_OS_NAME == "windows" ]]; then
       ./travis_setup.sh;
       export DL_INSTALL_DIR=cbuild/install;
       export LD_LIBRARY_PATH=${DL_INSTALL_DIR}/lib:${LD_LIBRARY_PATH};
       export FFI_INSTALL_DIR=travis_win/libffi/install;
       export LD_LIBRARY_PATH=${FFI_INSTALL_DIR}/bin:${LD_LIBRARY_PATH};
+      export PATH=${DL_INSTALL_DIR}/lib:${PATH};
+      export PATH=${DL_INSTALL_DIR}/bin:${PATH};
+      export PATH=${FFI_INSTALL_DIR}/lib:${PATH};
+      export PATH=${FFI_INSTALL_DIR}/bin:${PATH};
+      echo $FFI_INSTALL_DIR;
+      echo $DL_INSTALL_DIR;
     else
       echo "Unsupported OS.";
       exit 1;
     fi
-  # Set PATH
-  - export PATH=${DL_INSTALL_DIR}/lib:${PATH}
-  - export PATH=${DL_INSTALL_DIR}/bin:${PATH}
-  - export PATH=${FFI_INSTALL_DIR}/lib:${PATH}
-  - export PATH=${FFI_INSTALL_DIR}/bin:${PATH}
 
   # Set OS directory and license location
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then

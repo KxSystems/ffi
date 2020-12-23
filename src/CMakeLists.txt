@@ -48,10 +48,10 @@ elseif(APPLE)
         ${FFI_LIBRARY}
     )
 else()
-target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
-    libdl.so
-    libffi.so
-)
+    target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
+        libdl.so
+        libffi.so
+    )
 endif()
 
 # Specify include directory
