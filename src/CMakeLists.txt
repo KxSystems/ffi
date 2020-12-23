@@ -11,16 +11,24 @@ add_library(${MY_LIBRARY_NAME} SHARED
 )
 
 # Search dependency
-set(${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
-set(${CMAKE_SHARED_LIBRARY_PREFIX}ffi${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
+if(APPLE)
+    set(${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{DYLD_LIBRARY_PATH})
+    set(${CMAKE_SHARED_LIBRARY_PREFIX}ffi${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{DYLD_LIBRARY_PATH})
+    # Newer version of OSX needs to install libffi
+    find_library(libffi)
+elseif(WIN32)
+    find_package(dlfcn-win32 REQUIRED)
+    set(CMAKE_DL_LIBS dlfcn-win32::dl)
+else()
+    set(${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
+    set(${CMAKE_SHARED_LIBRARY_PREFIX}ffi${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
+endif()
 
 # Download k.h
 file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_SOURCE_DIR}/include/k.h")
 
 # Dependency for platform
 if(MSVC)
-    find_package(dlfcn-win32 REQUIRED)
-    set(CMAKE_DL_LIBS dlfcn-win32::dl)
     file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/w64/q.lib" "${CMAKE_BINARY_DIR}/q.lib")
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
         "${CMAKE_BINARY_DIR}/q.lib"
@@ -45,8 +53,6 @@ if(APPLE)
   target_include_directories(${MY_LIBRARY_NAME} PRIVATE
     /usr/include/ffi
   )
-  # Newer version of OSX needs to install libffi
-  find_package(libffi)
 endif()
   
 # Compile option
