@@ -10,36 +10,35 @@ add_library(${MY_LIBRARY_NAME} SHARED
     ffi.c
 )
 
-# Search dependency
-if(APPLE)
-    set(${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{DYLD_LIBRARY_PATH})
-    set(${CMAKE_SHARED_LIBRARY_PREFIX}ffi${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{DYLD_LIBRARY_PATH})
-    # Newer version of OSX needs to install libffi
-    find_library(libffi)
-elseif(WIN32)
-    find_package(dlfcn-win32 REQUIRED)
-    set(CMAKE_DL_LIBS dlfcn-win32::dl)
-else()
-    set(${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
-    set(${CMAKE_SHARED_LIBRARY_PREFIX}ffi${CMAKE_SHARED_LIBRARY_SUFFIX}_DIR $ENV{LD_LIBRARY_PATH})
-endif()
-
 # Download k.h
 file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_SOURCE_DIR}/include/k.h")
+
+# Search dl library
+find_library(DL_LIBRARY
+    REQUIRED
+    NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}dl
+    HINTS $ENV{DL_INSTALL_DIR}/lib
+)
+
+# Search ffi library
+find_library(FFI_LIBRARY
+    REQUIRED
+    NAMES libffi
+    HINTS $ENV{FFI_INSTALL_DIR}/bin
+)
 
 # Dependency for platform
 if(MSVC)
     file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/w64/q.lib" "${CMAKE_BINARY_DIR}/q.lib")
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
         "${CMAKE_BINARY_DIR}/q.lib"
-        ${CMAKE_DL_LIBS}
-        dl.dll
-        ffi.dll
+        ${DL_LIBRARY}
+        ${FFI_LIBRARY}
     )
 else()
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
-        libdl.so
-        libffi.so
+        ${DL_LIBRARY}
+        ${FFI_LIBRARY}
     )
 endif()
 
@@ -48,11 +47,18 @@ target_include_directories(${MY_LIBRARY_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )
 
-# For MacOS include /usr/include
 if(APPLE)
-  target_include_directories(${MY_LIBRARY_NAME} PRIVATE
-    /usr/include/ffi
-  )
+    target_include_directories(${MY_LIBRARY_NAME} PRIVATE
+        $ENV{FFI_INSTALL_DIR}/include
+    )
+elseif(WIN32)
+    # Windows use installed dlfcn-win32 and installed libffi
+    target_include_directories(${MY_LIBRARY_NAME} PRIVATE
+        $ENV{DL_INSTALL_DIR}/include/
+        $ENV{FFI_INSTALL_DIR}/include/
+    )
+else()
+    #Linux Nothing to do
 endif()
   
 # Compile option

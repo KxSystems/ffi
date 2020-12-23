@@ -17,26 +17,28 @@ before_install:
   - export TESTS="True"
   # Install dependencies
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then
-      sudo apt-get install -y libffi-dev libffi-dev:i386;
+      sudo apt-get install -y libffi-dev;
+      export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH};
     elif [[ $TRAVIS_OS_NAME == "osx" ]]; then
       echo "Utilize system ffi for Mac OSX.";
+      export FFI_INSTALL_DIR=/usr/include/ffi;
+      export LD_LIBRARY_PATH=${FFI_INSTALL_DIR}/lib:${LD_LIBRARY_PATH};
     elif [[ $TRAVIS_OS_NAME == "windows" ]]; then
-      # Install dlfcn_win
-      mkdir cbuild;
-      wget https://github.com/dlfcn-win32/dlfcn-win32/archive/v1.2.0.tar.gz;
-      tar xvf v1.2.0.tar.gz -C ./cbuild --strip-components=1;
-      # Build and install to cbuild/install
-      mkdir cbuild/install;
-      mkdir cbuild/cmake/solution;
-      cd cbuild/cmake/solution;
-      #cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=../../install ..
-      cmake --build . --config Release
-      cmake --build . --config Release --target install
-      cd ../../..
+      ./travis_setup.sh;
+      export DL_INSTALL_DIR=cbuild/install;
+      export LD_LIBRARY_PATH=${DL_INSTALL_DIR}/lib:${LD_LIBRARY_PATH};
+      export FFI_INSTALL_DIR=travis_win/libffi/install;
+      export LD_LIBRARY_PATH=${FFI_INSTALL_DIR}/bin:${LD_LIBRARY_PATH};
     else
       echo "Unsupported OS.";
       exit 1;
     fi
+  # Set PATH
+  - export PATH=${DL_INSTALL_DIR}/lib:${PATH}
+  - export PATH=${DL_INSTALL_DIR}/bin:${PATH}
+  - export PATH=${FFI_INSTALL_DIR}/lib:${PATH}
+  - export PATH=${FFI_INSTALL_DIR}/bin:${PATH}
+
   # Set OS directory and license location
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then
       QLIBDIR=l64;
@@ -76,14 +78,12 @@ before_install:
   # Build
   - mkdir build && cd build
   - if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-      cmake -G "Visual Studio 15 2017 Win64" ..;
-      cmake --build . --config Release;
+      cmake -G "Visual Studio 15 2017 Win64" --config Release ..;
       cmake --build . --config Release --target install;
       cd ../;
     else
-      cmake -DCMAKE_BUILD_TYPE=Release ..;
-      make;
-      make install;
+      cmake ..;
+      cmake --build . --config Release --target install;
       cd ../;
     fi
 
