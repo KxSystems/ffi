@@ -9,7 +9,6 @@
 //%% Platform Setting %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
 #if((defined(_WIN32) || defined(WIN32)) && (defined(_MSC_VER)))
-#define snprintf sprintf_s
 #define EXP __declspec(dllexport)
 #define RTLD_NODELETE 0
 #elif defined(linux)
@@ -77,7 +76,7 @@
 
 //%% OS Specific Functions %%//vvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
-#if defined(MACOSX) && defined(SYSFFI)
+#if defined(__APPLE__)
 /**
  * @brief As per manual ffi_prep_closure on osx.
  * @note
