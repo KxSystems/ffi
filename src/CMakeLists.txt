@@ -13,19 +13,26 @@ add_library(${MY_LIBRARY_NAME} SHARED
 # Download k.h
 file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_SOURCE_DIR}/include/k.h")
 
-# Search dl library
-find_library(DL_LIBRARY
-    REQUIRED
-    NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}dl
-    HINTS $ENV{DL_INSTALL_DIR}/lib
-)
-
-# Search ffi library
-find_library(FFI_LIBRARY
-    REQUIRED
-    NAMES libffi
-    HINTS $ENV{FFI_INSTALL_DIR}/bin
-)
+if(WIN32)
+    # Search dl library
+    find_library(DL_LIBRARY
+        REQUIRED
+        NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}dl
+        HINTS $ENV{DL_INSTALL_DIR}/lib
+    )
+    # Search ffi library
+    find_library(FFI_LIBRARY
+        REQUIRED
+        NAMES libffi
+        HINTS $ENV{FFI_INSTALL_DIR}/bin
+    )
+elseif(APPLE)
+    # Search ffi library from user install directory or /usr/lib by default (For OSX ver<=10.13)
+    find_library(FFI_LIBRARY
+        NAMES libffi
+        HINTS $ENV{FFI_INSTALL_DIR}/lib /usr/lib
+    )
+endif()
 
 # Dependency for platform
 if(MSVC)
@@ -35,11 +42,16 @@ if(MSVC)
         ${DL_LIBRARY}
         ${FFI_LIBRARY}
     )
-else()
+elseif(APPLE)
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
-        ${DL_LIBRARY}
+        libdl.dylib
         ${FFI_LIBRARY}
     )
+else()
+target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
+    libdl.so
+    libffi.so
+)
 endif()
 
 # Specify include directory
@@ -48,8 +60,10 @@ target_include_directories(${MY_LIBRARY_NAME} PRIVATE
 )
 
 if(APPLE)
+    # FFI header exists under /usr/include/ffi for ver<=10.13
     target_include_directories(${MY_LIBRARY_NAME} PRIVATE
         $ENV{FFI_INSTALL_DIR}/include
+        /usr/include/ffi
     )
 elseif(WIN32)
     # Windows use installed dlfcn-win32 and installed libffi

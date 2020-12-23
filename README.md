@@ -156,7 +156,7 @@ In order to make `libffi` visible to kdb+, you need to add the path to `libffi.s
 
 ```bash
 
-$ export LD_LIBRARY_PATH=/usr/lib64:${DYLD_LIBRARY_PATH}
+$ export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
 
 ```
 
