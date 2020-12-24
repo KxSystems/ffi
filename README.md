@@ -162,7 +162,9 @@ $ export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
 
 #### MacOS
 
-For MacOS, if user machine is version<=10.13, `libffi` should be in `/usr/lib` and no action is required. Otherwise `libffi` needs to be installed via `brew` command:
+For MacOS, if user machine is version<=10.13, `libffi` should be in `/usr/lib` and no action is required. You can proceed to the [next step](#Building ffikdb).
+
+If user machine is version>=10.14 `libffi` needs to be installed via `brew` command:
 
 ```bash
 
@@ -170,7 +172,7 @@ $ `brew install libffi`
 
 ```
 
-Then set `FFI_INSTALL_DIR` to the instaaled directory where `include` and `lib` exist. To make `libffi` visible to kdb+, you need to add the path to `DYLD_LIBRARY_PATH`:
+Then set `FFI_INSTALL_DIR` to the installation directory where `include` and `lib` exist. To make `libffi` visible to kdb+, you need to add the path to `DYLD_LIBRARY_PATH`:
 
 ```bash
 
