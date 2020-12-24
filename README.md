@@ -170,7 +170,7 @@ $ `brew install libffi`
 
 ```
 
-Then set `FFI_INSTALL_DIR` to the instaaled directory where `include` and `lib` exist. To make `libffi` visible to kdb+, you need to add the path to `DYLD_LIBRARY_PATH`:
+Then set `FFI_INSTALL_DIR` to the installation directory where `include` and `lib` exist. To make `libffi` visible to kdb+, you need to add the path to `DYLD_LIBRARY_PATH`:
 
 ```bash
 

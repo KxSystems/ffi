@@ -10,48 +10,7 @@ add_library(${MY_LIBRARY_NAME} SHARED
     ffi.c
 )
 
-# Download k.h
-file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_SOURCE_DIR}/include/k.h")
-
-if(WIN32)
-    # Search dl library
-    find_library(DL_LIBRARY
-        REQUIRED
-        NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}dl
-        HINTS $ENV{DL_INSTALL_DIR}/lib
-    )
-    # Search ffi library
-    find_library(FFI_LIBRARY
-        REQUIRED
-        NAMES libffi
-        HINTS $ENV{FFI_INSTALL_DIR}/bin
-    )
-elseif(APPLE)
-    # Search ffi library from user install directory or /usr/lib by default (For OSX ver<=10.13)
-    if(DEFINED FFI_INSTALL_DIR)
-        find_library(FFI_LIBRARY
-            NAMES libffi
-            HINTS $ENV{FFI_INSTALL_DIR}/lib
-        )
-    endif()
-endif()
-
-# Dependency for platform
-if(MSVC)
-    file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/w64/q.lib" "${CMAKE_BINARY_DIR}/q.lib")
-    target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
-        "${CMAKE_BINARY_DIR}/q.lib"
-        ${DL_LIBRARY}
-        ${FFI_LIBRARY}
-    )
-else()
-    target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
-        libdl.so
-        libffi.so
-    )
-endif()
-
-# Specify include directory
+# Specify include directories
 target_include_directories(${MY_LIBRARY_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )
@@ -70,6 +29,50 @@ elseif(WIN32)
     )
 else()
     #Linux Nothing to do
+endif()
+
+# Download k.h
+file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_SOURCE_DIR}/include/k.h")
+
+# Link 
+if(WIN32)
+    # Search dl library
+    find_library(DL_LIBRARY
+        REQUIRED
+        NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}dl
+        HINTS $ENV{DL_INSTALL_DIR}/lib
+    )
+    # Search ffi library
+    find_library(FFI_LIBRARY
+        REQUIRED
+        NAMES libffi
+        HINTS $ENV{FFI_INSTALL_DIR}/bin
+    )
+    # Get q dependent library
+    file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/w64/q.lib" "${CMAKE_BINARY_DIR}/q.lib")
+    # Link dependent libararies
+    target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
+        "${CMAKE_BINARY_DIR}/q.lib"
+        ${DL_LIBRARY}
+        ${FFI_LIBRARY}
+    )
+else()
+    if(APPLE)
+        # Search ffi library from user install directory or /usr/lib by default (For OSX ver<=10.13)
+        if(DEFINED FFI_INSTALL_DIR)
+            find_library(FFI_LIBRARY
+                NAMES libffi
+                HINTS $ENV{FFI_INSTALL_DIR}/lib
+            )
+        endif()
+        # Link flag
+        set_target_properties(${MY_LIBRARY_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif()
+    # Link dependent libararies
+    target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
+        libdl.so
+        libffi.so
+    )
 endif()
   
 # Compile option
@@ -102,8 +105,6 @@ set_target_properties(${MY_LIBRARY_NAME} PROPERTIES PREFIX "")
 
 # OS Specific
 IF(APPLE)
-    set_target_properties(${MY_LIBRARY_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-    set_target_properties(${MY_LIBRARY_NAME} PROPERTIES SUFFIX .so)
     set(OSFLAG m)
 elseif(WIN32)
     set(OSFLAG w)
