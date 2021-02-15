@@ -56,7 +56,7 @@
 
 // @brief Compile regex.
 // @param pattern {string}: Regex pattern.
-// @param cflags {int}: Bit field of compile flags.
+// @param cflags {list of bool}: Bit field of compile flags.
 // @return {list of byte}: Regex object.
 .pcre.regcomp:{[pattern;cflags]
   regex:64#0x0;
