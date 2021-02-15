@@ -162,7 +162,7 @@ $ export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
 
 #### MacOS
 
-For MacOS, if user machine is version<=10.13, `libffi` should be in `/usr/lib` and no action is required. You can proceed to the [next step](#Building ffikdb).
+For MacOS, if user machine is version<=10.13, `libffi` should be in `/usr/lib` and no action is required. You can proceed to the [next step](#Buildingffikdb).
 
 If user machine is version>=10.14 `libffi` needs to be installed via `brew` command:
 

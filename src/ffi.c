@@ -862,10 +862,11 @@ EXP K bind_K_function(K funcname, K n) {
 //%% Probably Garbage %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
 /**
- * @brief Load all symbols in a given shared object to current process.
+ * @brief Load all symbols in a given shared object to current process. Once eintire library
+ *  is loaded, shared library name does not need to be passed as an argument of `bind` and `callFunction`.
  * @param library: Name of shared object.
  * @note
- * Not documented anywhere. Probably garbage.
+ * Not documented anywhere. Can be restored as an experimental feature.
  */
 EXP K loadlib(K library) {
   void *handle;
