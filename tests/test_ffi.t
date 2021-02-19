@@ -81,9 +81,6 @@ $[.ffi.os[] = "m";
   ]
  ]
 
-// MacOSX exits here
-if[.ffi.os[] = "m"; exit 0];
-
 // Use C API //------------------------------------------------/
 
 -1 "<< Testing sd0/1 >>";

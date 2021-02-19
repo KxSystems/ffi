@@ -81,7 +81,7 @@ target_compile_options(${MY_LIBRARY_NAME} PRIVATE
     -DKXVER=3 -std=c99
 
     # Compiler Option
-    $<$<PLATFORM_ID:Windows>: ${CMAKE_C_FLAGS} /W3 /D WIN32_LEAN_AND_MEAN /D _CRT_SECURE_NO_WARNINGS>
+    $<$<PLATFORM_ID:Windows>: ${CMAKE_C_FLAGS} /W3 /D WIN32_LEAN_AND_MEAN /D>
     $<$<PLATFORM_ID:Darwin>: ${CMAKE_C_FLAGS} -DSYSFFI -fPIC -Wno-strict-aliasing>
     $<$<PLATFORM_ID:Linux>: ${CMAKE_C_FLAGS} -fPIC -D_GNU_SOURCE -Wno-strict-aliasing>
 
