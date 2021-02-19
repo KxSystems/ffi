@@ -457,7 +457,7 @@ static void closurefunc(ffi_cif *cif, void *resp, void **args, void *userdata) {
   K args_as_k = ktn(0, n);
   // characters denoting q types of arguments
   K qtypes = kK((K)userdata)[1];
-  for(I i= 0; i != n; ++i) {
+  for(int i=0; i != n; ++i) {
     // Wrap arguments as K objects acording to given char q type indicators
     I closure_argtype=ktype(kC(qtypes)[i]);
     if(closure_argtype == ER){
@@ -762,7 +762,7 @@ EXP K call_function(K returntype_and_func, K args){
   // values= malloc(sizeof(void *) * n);
   void **values= calloc(n, sizeof(void *));
   void **pvalues= calloc(n, sizeof(void *));
-  for(int i= 0; i != n; ++i) {
+  for(int i=0; i != n; ++i) {
     // Convert q types of arguments to ffi type
     types[i]= gettype(kK(args)[i]->t);
     // Contain value behind `args` to void pointer according to the underlying type in `args` itself and copy to `values`
@@ -940,7 +940,7 @@ EXP K deref(K x, K returntypes, K kidx) {
   test_struct_type.type= FFI_TYPE_STRUCT;
 
   ffi_type **elems= (ffi_type **) calloc(returntypes->n + 1, sizeof(void *));
-  for(J i= 0; i < returntypes->n; ++i) {
+  for(J i=0; i < returntypes->n; ++i) {
     // Convert q type characters to ffi types
     elems[i]= char_to_type(kC(returntypes)[i]);
   }
@@ -959,7 +959,7 @@ EXP K deref(K x, K returntypes, K kidx) {
 
   K derefed= ktn(0, returntypes->n);
   J offset= 0;
-  for(J i= 0; i < derefed->n; ++i) {
+  for(J i=0; i < derefed->n; ++i) {
     offset= FFI_ALIGN(offset, elems[i]->alignment);
     // Wrap test_struct_type as K object according to the specified return types
     kK(derefed)[i]= kvalue(ktype(kC(returntypes)[i]), p + offset);
