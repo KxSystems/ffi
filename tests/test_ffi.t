@@ -67,14 +67,23 @@ x~`a`b`c
 -1 "<< Testing strerror_r Function >>";
 
 // decode errno
-//.ffi.callFunction[`strerror_r] (60i; errs; count errs:256#"\000"; ::);
-//errs
-strerror_r:.ffi.bind[`strerror_r; "iCj"; "s"];
-errs:strerror_r (60i; errs; count errs:256#" "; ::);
-errs = `$"Device not a stream"
-
+$[.ffi.os[] = "m";
+  [
+    // MacOSX
+    .ffi.callFunction[`strerror_r] (60i; errs; count errs:256#" "; ::);
+    (20#errs) ~ "Operation timed out\000"    
+  ];
+  [
+    // Linux
+    strerror_r:.ffi.bind[`strerror_r; "iCj"; "s"];
+    errs:strerror_r (60i; errs; count errs:256#"\000"; ::);
+    errs = `$"Device not a stream"
+  ]
+ ]
 
 // Use C API //------------------------------------------------/
+
+-1 "<< Testing sd0/1 >>";
 
 //register func on handle
 valueLater:();

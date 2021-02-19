@@ -103,7 +103,7 @@ script:
 
 deploy:
   provider: releases
-  tokrn: ${GITHUB_APIKEY}
+  token: ${GITHUB_APIKEY}
   file: ${FILE_NAME}
   on:
     tags: true
