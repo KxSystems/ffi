@@ -92,7 +92,7 @@ target_compile_options(${MY_LIBRARY_NAME} PRIVATE
 )
 
 # Shared library prefix and suffix
-# ex.) telegrafkdb.so for linux
+# ex.) ffikdb.so for linux
 # Suffix must be `.so` for Mac
 if(APPLE)
   set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
