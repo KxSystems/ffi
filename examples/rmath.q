@@ -3,8 +3,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
 /
-* @file
-* rmath.q
+* @file rmath.q
 * @overview
 * This file shows how to use ffi interface to utilize functions in Rmath library.
 \

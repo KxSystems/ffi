@@ -3,8 +3,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
 /
-* @file
-* c_api.q
+* @file c_api.q
 * @overview
 * This file shows how to use ffi interface to utilize functions in C API for q.
 *  This example alone does not make an example. You need to launch another q process connecting

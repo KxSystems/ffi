@@ -903,19 +903,20 @@ EXP K set_errno(K n) {
 }
 
 /**
- * @brief Derefer ffi structs as K objects. Start index is given by `kidx` and the number of objects to be
+ * @brief Derefer ffi pointer as K objects. Start index is given by `kidx` and the number of objects to be
  *  dereferred is given by a length of returntypes which denote return q types of the dereferred results.
- * @param x: UNKNOWN
+ * @param x: Raw pointer.
  * @param returntypes: Characters denoting q types of returned values.
  * @param kidx: Index to start to read struct.
  * @note
- * This is not documented anywhere. Probably garbage.
+ * This is not documented anywhere. Probably garbage. There is no way to get a raw pointer from q in the
+ *  first place.
  */ 
 EXP K deref(K x, K returntypes, K kidx) {
   
   G *p;
 
-  if((!((x->t == KJ && sizeof(void *) == 8) || (x->t == KI && sizeof(void *) == 4))) || returntypes->t != KC || kidx->t != -KJ) {
+  if((!((x->t == -KJ && sizeof(void *) == 8) || (x->t == -KI && sizeof(void *) == 4))) || returntypes->t != KC || kidx->t != -KJ) {
     // type and bitness does not match or return type is not string or index is not long
     return krr("type: [r;C;j] expected"); 
   }
