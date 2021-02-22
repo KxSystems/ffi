@@ -3,8 +3,7 @@
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
 /
-* @file
-* stdlib.q
+* @file stdlib.q
 * @overview
 * This file shows how to use ffi interface to utilize functions in C standard library
 \
