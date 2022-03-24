@@ -1,5 +1,20 @@
 ##%% Compilation %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
+# OS Specific
+IF(APPLE)
+    set(OSFLAG m)
+elseif(WIN32)
+    set(OSFLAG w)
+else()
+    set(OSFLAG l)
+endif()
+
+# Set bitness
+set(BITNESS 32)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(BITNESS 64)
+endif()
+
 # Default option is Release
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
@@ -49,7 +64,7 @@ if(WIN32)
         HINTS $ENV{FFI_INSTALL_DIR}/bin
     )
     # Get q dependent library
-    file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/w64/q.lib" "${CMAKE_BINARY_DIR}/q.lib")
+    file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/${OSFLAG}${BITNESS}/q.lib" "${CMAKE_BINARY_DIR}/q.lib")
     # Link dependent libararies
     target_link_libraries(${MY_LIBRARY_NAME} PRIVATE
         "${CMAKE_BINARY_DIR}/q.lib"
@@ -102,21 +117,6 @@ set_target_properties(${MY_LIBRARY_NAME} PROPERTIES SUFFIX ${CMAKE_SHARED_LIBRAR
 set_target_properties(${MY_LIBRARY_NAME} PROPERTIES PREFIX "")
 
 ##%% Installation %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
-
-# OS Specific
-IF(APPLE)
-    set(OSFLAG m)
-elseif(WIN32)
-    set(OSFLAG w)
-else()
-    set(OSFLAG l)
-endif()
-
-# Set bitness
-set(BITNESS 32)
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BITNESS 64)
-endif()
 
 # Copy built shared object after build instead of during installation
 add_custom_command(TARGET ${MY_LIBRARY_NAME}
