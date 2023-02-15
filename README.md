@@ -1,6 +1,6 @@
 # FFI for kdb+
 
-`ffikdb` is an extension to kdb+ for loading and calling dynamic libraries using pure `q`. 
+`ffikdb` is an extension to kdb+ for loading and calling dynamic libraries using pure q. 
 It is part of the [_Fusion for kdb+_](https://code.kx.com/q/interfaces/fusion/) interface collection.
 
 The main purpose of the library is to build stable interfaces on top of external libraries, or to interact with the operating system from `q`. No compiler toolchain or writing C/C++ code is required to use this library.
@@ -19,7 +19,7 @@ Please [report issues](https://github.com/KxSystems/ffi/issues) in this reposito
 
 ## Installation
 
-### Pre-built Binary
+### Pre-built binary
 
 Download the appropriate release archive from [releases](../../releases/latest) page. 
 
@@ -34,9 +34,9 @@ Windows         | Open the archive and copy content of the `ffi` folder (`ffi\*`
 
 ### Building and installing from source
 
-#### Third-Party Library Installation
+#### Third-party library installation
 
-ffikdb uses `libdl` and `libffi` to utilize foreign functions. However, as Windows does not have POSIX-like `libdl` user needs to install `dlfcn-win32` in advance. As for `libffi` OS had it by default before but it seems `libffi` package also needs to be installed for recent machines.
+Ffikdb uses `libdl` and `libffi` to utilize foreign functions. However, as Windows does not have POSIX-like `libdl` user needs to install `dlfcn-win32` in advance. As for `libffi` OS had it by default before but it seems `libffi` package also needs to be installed for recent machines.
 
 #### Windows
 
@@ -57,47 +57,45 @@ build> cmake --build . --config Release --target install
 
 ```
 
-In order to make the built dll library visibe to kdb+, you need to create a symlink in `QHOME/w64` to the dll library.
+In order to make the built dll library visibe to kdb+, you need to create a symlink in `QHOME/w64` to the DLL library.
 
 ```bat
-
 build> cd %QHOME%\w64
 w64> MKLINK dl.dll %DL_INSTALL_DIR%\bin\dl.dll
-
 ```
 
 ##### 2. Install `libffi`
 
 This installation requires seudo Linux terminal to execute shell script. We used MSYS2. For installation of MSYS2, please see [this page](https://www.msys2.org/). After installing MSYS2, install gcc, git and autoconf.
 
+
 ```bash
-
 $ pacman -Syu base-devel gcc vim cmake make texinfo libtool autoconf automake-wrapper
-
 ```
+
 
 You will be asked to close msys2 once. Then close and execute following line.
 
-```bash
 
+```bash
 $ pacman -Su
-
 ```
 
-Now gcc was installed. In order to enable gcc, user might need to create PATH to proper directory. Add following ine to the bottm of `.bashrc` and restart MSYS2.
+
+Now GCC was installed. To enable GCC, you might need to create PATH to proper directory. Add following ine to the bottm of `.bashrc` and restart MSYS2.
+
 
 ```bash
-
 $ export PATH=/mingw64/bin:$PATH
-
 ```
+
 
 Then clone the source of `libffi` and build it.
 
 **Note:** If `aclocal is not found` is returned at the `autogen.sh`, libraries `libtool`, `autoconf`, `automake-wrapper` might need to be installed again.
 
-```bash
 
+```bash
 $ git clone https://github.com/libffi/libffi.git
 $ cd libffi
 $ ./autogen.sh
@@ -106,115 +104,118 @@ libffi]$ mkdir install
 libffi]$ cd build
 build]$ ../configure --prefix=$(pwd)/../install --disable-docs --enable-static=yes --enable-shared=yes -build=x86_64-w64-mingw32
 build]$ make install
-
 ```
+
 
 Now `libffi` package was built. Go to the directory where `dlfcn-win32` was cloned.
 
 1. Create a new directory `libffi` and copy the libraries into `install/` under the new `libffi` directory.
 2. Set `FFI_INSTALL_DIR` to the copied install directory.
 
-```bat
 
+```bat
 > mkdir libffi && cd libffi
 libffi> mkdir install
 libffi> xcopy /s /i C:\msys64\home\[username]\[some path]\libffi\install\ install
 libffi> set FFI_INSTALL_DIR=%cd%\install
-
 ```
 
-Create lib from dll fie.
+
+Create lib from DLL fie.
+
 
 ```bat
-
 libffi> cd install\bin
 bin> echo EXPORTS > libffi.def
 bin> for /f "usebackq tokens=4,* delims=_ " %i in (`dumpbin /exports "libffi-8.dll"`) do if %i==ffi echo %i_%j >> libffi.def
 bin> lib /def:"libffi.def" /out:"libffi.lib" /machine:x64
-
 ```
 
-Finally, you need to create a symlink in `QHOME\w64` to dll library.
+
+Finally, you need to create a symlink in `QHOME\w64` to DLL library.
+
 
 ```bat
-
 bin> cd %QHOME%\w64
 w64> MKLINK libffi.dll %FFI_INSTALL_DIR%\bin\libffi-8.dll
-
 ```
+
 
 #### Linux
 
-For linux `libffi` needs to be installed.
+For Linux `libffi` needs to be installed.
 
 environment                    | installation
 -------------------------------|----------------------------------------------------------
 Ubuntu Linux with 64-bit kdb+  | `sudo apt-get install libffi-dev`
 RHEL/CentOS  with 64-bit kdb+  | `sudo yum install libffi-devel`
 
-In order to make `libffi` visible to kdb+, you need to add the path to `libffi.so` to `LD_LIBRARY_PATH`:. It depends on your environment but example is below:
+To make `libffi` visible to kdb+, add the path to `libffi.so` to `LD_LIBRARY_PATH`:. It depends on your environment, but for example:
+
 
 ```bash
-
-$ export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
-
+export LD_LIBRARY_PATH=/usr/lib64:${LD_LIBRARY_PATH}
 ```
 
-#### MacOS
 
-For MacOS, if user machine is version<=10.13, `libffi` should be in `/usr/lib` and no action is required. You can proceed to the [next step](#Buildingffikdb).
+#### macOS
 
-If user machine is version>=10.14 `libffi` needs to be installed via `brew` command:
+For macOS ≤ 10.13, `libffi` should be in `/usr/lib` and no action is required. You can proceed to the [next step](#buildingffikdb).
+
+For macOS ≥ 10.14, install `libffi` via `brew` command:
+
 
 ```bash
-
-$ `brew install libffi`
-
+brew install libffi
 ```
 
-Then set `FFI_INSTALL_DIR` to the installation directory where `include` and `lib` exist. To make `libffi` visible to kdb+, you need to add the path to `DYLD_LIBRARY_PATH`:
+
+Then set `FFI_INSTALL_DIR` to the installation directory where `include` and `lib` exist. To make `libffi` visible to kdb+, add the path to `DYLD_LIBRARY_PATH`:
 
 ```bash
-
-$ export DYLD_LIBRARY_PATH=${FFI_INSTALL_DIR}/lib:${DYLD_LIBRARY_PATH}
-
+export DYLD_LIBRARY_PATH=${FFI_INSTALL_DIR}/lib:${DYLD_LIBRARY_PATH}
 ```
+
 
 #### Building ffikdb
 
-*Note: Compiling interface from source uses cmake. The default build type is `Release`. User should set `-DCMAKE_BUILD_TYPE=Debug` following `cmake` for debugging build, i.e.,*
+> :point_right: **Compiling interface from the source uses cmake**
+> 
+> The default build type is `Release`. Set `-DCMAKE_BUILD_TYPE=Debug` following `cmake` for debugging build, i.e.,
+> 
+> ```bash
+> cmake --config Debug ..
+> ```
+
+> :point_right: **Note**
+> 
+> `cmake --build . --target install` installs shared object and q files under `q/` into `QHOME/[os]64` and `QHOME` directory respectively. 
+> If you have a preference of where to place shared object and q files, you can execute `cmake --build .` instead of `cmake --build . --target install`. 
+> Then the built package can be found under `build/ffikdb/`.
+
+
+#### Linux/macOSX
 
 ```bash
-
-$ cmake --config Debug ..
-
-```
-
-*Note: `cmake --build . --target install` installs shared object and q files under `q/` into `QHOME/[os]64` and `QHOME` directory respectively. If you have a preference of where to place shared object and q files, you can execute `cmake --build .` instead of `cmake --build . --target install`. Then buit package can be found under `build/ffikdb/`.*
-
-#### Linux/MacOSX
-
-```bash
-
 ffi]$ mkdir build && cd build
 build]$ cmake ..
 build]$ cmake --build . --target install
-
 ```
+
 
 #### Windows
 
-```bat
 
+```bat
 ffi>mkdir build && cd build
 build>cmake --config Release ..
 build>cmake --build . --config Release --target install
-
 ```
+
 
 ## Documentation
 
-See [code.kx.com/q/interfaces/ffi](https://code.kx.com/q/interfaces/ffi/) for documentation.
+See [`docs`](docs/index.md) for documentation.
 
 ## Status
 
@@ -224,6 +225,7 @@ If you find issues with the interface or have feature requests please consider r
 
 If you wish to contribute to this project please follow the contributing guide [here](https://github.com/KxSystems/ffi/blob/master/CONTRIBUTING.md).
 
-## Unsupported Functionality
+## :warning: Unsupported functionality
 
-Foreign functions taking a struct do not work properly (can cause crash). For example, a function taking `K` pointer does not work.
+Foreign functions taking a struct do not work properly, and can cause a crash. 
+For example, a function taking a `K` pointer does not work.
