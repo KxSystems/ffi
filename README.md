@@ -187,7 +187,7 @@ export DYLD_LIBRARY_PATH=${FFI_INSTALL_DIR}/lib:${DYLD_LIBRARY_PATH}
 > cmake --config Debug ..
 > ```
 
-> :point_right: **Note**
+> **Note**
 > 
 > `cmake --build . --target install` installs shared object and q files under `q/` into `QHOME/[os]64` and `QHOME` directory respectively. 
 > If you have a preference of where to place shared object and q files, you can execute `cmake --build .` instead of `cmake --build . --target install`. 
@@ -221,9 +221,9 @@ See [`docs`](docs/index.md) for documentation.
 
 The FFI interface is provided here under an Apache 2.0 license.
 
-If you find issues with the interface or have feature requests please consider raising an issue [here](https://github.com/KxSystems/ffi/issues).
+If you find issues with the interface or have feature requests please consider [raising an issue](https://github.com/KxSystems/ffi/issues).
 
-If you wish to contribute to this project please follow the contributing guide [here](https://github.com/KxSystems/ffi/blob/master/CONTRIBUTING.md).
+If you wish to contribute to this project please follow the [contributing guide](https://github.com/KxSystems/ffi/blob/master/CONTRIBUTING.md).
 
 ## :warning: Unsupported functionality
 
