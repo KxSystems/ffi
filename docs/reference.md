@@ -5,7 +5,7 @@
 
 object | use
 -------|----
-**Call function**
+*Call function*
 [`bind`](#ffibind) | bind function to be called
 [`callFunction`](#fficallfunction) | one-off function call
 <br>*Utility*
