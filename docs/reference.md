@@ -1,9 +1,3 @@
----
-title: Function reference | FFI | Interfaces | Documentation for kdb+ and q
-keywords: ffi, api, fusion, interface, q
-hero: <i class="fab fa-superpowers"></i> Fusion for Kdb+
----
-
 # ffikdb function reference
 
 The following functions are exposed in `ffi` namespace.

@@ -1,10 +1,6 @@
----
-title: Interface example | FFI | Interfaces | Documentation for kdb+ and q
-keywords: ffi, api, fusion, interface, library, q
-hero: <i class="fab fa-superpowers"></i> Fusion for Kdb+
----
+# FFI interface examples
 
-# FFI interface example
+Examples can be found in the `examples` directory
 
 ## Rmath library
 
@@ -87,3 +83,24 @@ q)seq
 `a`b`c
 
 ```
+
+See `examples/rmath.q` for an example.
+
+## C API Example
+
+See `examples/c_api.q`
+
+This file shows how to use ffi interface to utilize functions in C API for q.
+This example alone does not make an example. You need to launch another q process connecting to this process and communicate.
+
+## PCRE Example
+
+See `examples/pcre.q`
+
+This file shows how to use ffi interface to utilize functions in PCRE library.
+
+## StdLib Example
+
+See `examples/stdlib.q`
+
+This file shows how to use ffi interface to utilize functions in C standard library
