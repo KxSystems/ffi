@@ -74,7 +74,7 @@ callback:{[fd]
 \
 .z.pc:{[client]
   -1 "Thanks God! He is gone after ", string[CALL_COUNT client], " knocks!!";
-  .ffi.callFunction[`sd1] (client; ::);
+  .ffi.callFunction[`sd0] (client; ::);
   exit 0;
  };
 
