@@ -11,7 +11,7 @@
 
 ### Pre-built Binary
 
-Download the appropriate release archive from [releases](../../releases/latest) page. 
+Download the appropriate release archive from [releases](https://github.com/KxSystems/ffi/releases) page. 
 
 Then unpack and install by following command according to your platform type.
 
