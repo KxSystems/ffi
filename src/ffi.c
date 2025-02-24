@@ -89,7 +89,7 @@ ffi_status ffi_prep_closure_loc(ffi_closure *closure,
                                 void *data,
                                 void *loc)
 {
-  ffi_status status= ffi_prep_closure(closure, cif, func, data);
+  ffi_status status= ffi_prep_closure_loc(closure, cif, func, data, closure);
   if(status == FFI_OK) {
     if(mprotect(closure, sizeof(closure), PROT_READ | PROT_EXEC) == -1)
       status= FFI_BAD_ABI;
