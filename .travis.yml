@@ -4,7 +4,6 @@ jobs:
     os: linux
   - dist: bionic
     os: linux
-  - os: osx
   - os: windows
 os: linux
 dist: xenial
