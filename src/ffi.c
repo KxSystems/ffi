@@ -261,8 +261,8 @@ static K kvalue(I targettype, void *ret) {
   }
   else if(targettype == KC) {
     // string
-    S rs=(S*) ret;
-    r= ktn(KC, 1 + strlen(rs));
+    S rs=*(S*)ret;
+    r= ktn(KC, strlen(rs));
     memmove(kG(r), rs, r->n);
     return r;
   }
@@ -611,7 +611,7 @@ static void *getvalue(I targettype, K arg, void **p) {
  *  in the form of compound list.
  */
 EXP K call(K cif, K func, K args){
-
+  void *cfunc;
   ffi_cif *pcif= (ffi_cif *) kG(kK(cif)[0]);
   if(pcif->abi != FFI_DEFAULT_ABI){
     // Inproper ABI
@@ -643,27 +643,21 @@ EXP K call(K cif, K func, K args){
   DO(argc, values[i]= getvalue(ktype(kC(kK(cif)[2])[i]), kK(args)[i], &pvalues[i]));
 
   // Convert func to void* to pass to ffi_call
-  func = *(void **) kG(func);
+  cfunc = *(void **) kG(func);
   // The third argument to ffi_call must point to storage that is `sizeof(long)` or larger
   char ret[FFI_SIZEOF_ARG];
   // Call the function and store returned value to `ret`
-  ffi_call(pcif, func, &ret, values);
+  ffi_call(pcif, cfunc, &ret, values);
   free(pvalues);
   free(values);
 
   // Decrement reference count as args is not necessary any more
   r0(args);
 
-  // krr returns nullptr
-  if(!*ret){
-    return (K) ret;
-  }
-  else{
-    // Get integer type indicator from `returntype` use passed to `bind`
-    I returntype= ktype(kK(cif)[3]->g);
-    // Wrap the returned value according to the `returntype` and return it
-    return kvalue(returntype, ret);
-  }
+  // Get integer type indicator from `returntype` use passed to `bind`
+  I returntype= ktype(kK(cif)[3]->g);
+  // Wrap the returned value according to the `returntype` and return it
+  return kvalue(returntype, ret);
 }
 
 //%% Public Interface %%//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
