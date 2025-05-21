@@ -107,4 +107,4 @@ deploy:
   on:
     tags: true
     condition: $TRAVIS_OS_NAME == "windows" || $TRAVIS_OS_NAME == "osx" || ($TRAVIS_OS_NAME == "linux" && $TRAVIS_DIST == "xenial")
-  skip_cleanup: true
+  cleanup: true
