@@ -104,8 +104,8 @@ deploy:
   provider: releases
   token: ${GITHUB_APIKEY}
   file: ${FILE_NAME}
-  dpl_version: 1.10.16
+  skip_cleanup: true
+  dpl_version: 2.0.3.beta.4
   on:
     tags: true
     condition: $TRAVIS_OS_NAME == "windows" || $TRAVIS_OS_NAME == "osx" || ($TRAVIS_OS_NAME == "linux" && $TRAVIS_DIST == "xenial")
-  cleanup: true
