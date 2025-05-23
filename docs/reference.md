@@ -152,9 +152,12 @@ q).ffi.setErrno[]
 
 ## Passing data and getting results
 
-Throughout the library, characters are used to encode the types of data provided and expected as a result. These are based on the `c` column of [primitive data types](../basics/datatypes.md#primitive-datatypes) and the corresponding upper case for vectors of the same type. The `sz` column is useful to work out what type can hold enough data passing to/from C.
+Throughout the library, characters are used to encode the types of data provided and expected as a result. 
+These are based on the `c` column of [primitive data types](../basics/datatypes.md#primitive-datatypes) and the corresponding upper case for vectors of the same type. 
+The `sz` column is useful to work out what type can hold enough data passing to/from C.
 
-The argument types are derived from data passed to the function (in case of `callFunction`) or explicitly specified (in case of `bind`). The number of character types provided must match the number of arguments expected by the C function.
+The argument types are derived from data passed to the function (in case of `callFunction`) or explicitly specified (in case of `bind`). 
+The number of character types provided must match the number of arguments expected by the C function.
 
 The return type is specified as a single character and can be `" "` (space), which means to discard the result (i.e. `void`). If not provided, defaults to `int`.
 
@@ -172,4 +175,12 @@ l                | size of pointer (size_t)                       | ffi_type_sin
 k                | callback function/closure (only argument type) | ffi_type_pointer
 uppercase letter | pointer to the same type                       | ffi_type_pointer
 
-It is possible to pass a q function to C code as a callback (see `qsort` example below). In that case argument type should be specified as `"k"`. The function must be presented as a mixed list `(func; argument_types; return_type)`, where `func` is a q function (type `100h`), `argument_types` is a char array with the types the function expects, and `return_type` is a char corresponding to the return type of the function. Note that, as callbacks potentially have unbounded life in C code, they are not deleted after the function completes.
+It is possible to pass a q function to C code as a callback (see `qsort` example). 
+In that case argument type should be specified as `"k"`. 
+The function must be presented as a mixed list `(func; argument_types; return_type)`, where `func` is a q function (type `100h`), `argument_types` is a char array with the types the function expects, and `return_type` is a char corresponding to the return type of the function. 
+Note that, as callbacks potentially have unbounded life in C code, they are not deleted after the function completes.
+
+When interfacing with a C function that returns a pointer to a value, using a return type set to an uppercase letter (for example J corresponding to a pointer to a signed int64) the interface
+will not know if its pointing to one value or many. 
+Therefore the return type will be a single atom value of the value being pointed to (not a vector of values, nor a vector of a single value) of values, nor a vector of a single value).
+The exception is when the return type is `char*`, where the interface will create a character vector by looking for the null terminator character in the C string.

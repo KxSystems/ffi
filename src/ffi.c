@@ -261,7 +261,7 @@ static K kvalue(I targettype, void *ret) {
   }
   else if(targettype == KC) {
     // string
-    S rs=*(S*)ret;
+    S rs=(ret&&(*(S)ret))?*(S*)ret:"";
     r= ktn(KC, strlen(rs));
     memmove(kG(r), rs, r->n);
     return r;
@@ -286,14 +286,17 @@ static K kvalue(I targettype, void *ret) {
   r= ka(targettype);
   switch(targettype) {
     case -KB:
-    case -KC:
     case -KG:
-      // bool, char or byte
-      r->g= *(G *)ret;
+      // bool or byte
+      r->g= ret?*(G *)ret:0;
+      return r;
+    case -KC:
+      // char
+      r->g= ret?*(G *)ret:32; // 32 is a space (null char)
       return r;
     case -KH:
       // short
-      r->h= *(H *)ret;
+      r->h= ret?*(H *)ret:nh;
       return r;
     case -KM:
     case -KD:
@@ -302,26 +305,27 @@ static K kvalue(I targettype, void *ret) {
     case -KT:
     case -KI:
       // month, date, minute, second, time or int
-      r->i= *(I *)ret;
+      r->i= ret?*(I *)ret:ni;
       return r;
     case -KJ:
     case -KP:
     case -KN:
       // long, timestamp or timespan
-      r->j= *(J *)ret;
+      r->j= ret?*(J *)ret:nj;
       return r;
     case -KE:
       // real
-      r->e= *(E *)ret;
+      //r->e= *(E *)ret;
+      r->e= ret?*(E *)ret:nf;
       return r;
     case -KZ:
     case -KF:
       // datetime or float
-      r->f= *(F *)ret;
+      r->f= ret?*(F *)ret:nf;
       return r;
     case -KS:
       // symbol
-      r->s= ss(*(S *)ret);
+      r->s= ret?ss(*(S *)ret):ss("");
       return r;
     default:
       // Unsupported type
