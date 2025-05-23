@@ -2,6 +2,7 @@ jobs:
   include:
   - dist: xenial
     os: linux
+    deploy:
     - provider: releases
       token: "$GITHUB_APIKEY"
       file: "$FILE_NAME"
