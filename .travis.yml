@@ -2,9 +2,24 @@ jobs:
   include:
   - dist: xenial
     os: linux
+    - provider: releases
+      token: "$GITHUB_APIKEY"
+      file: "$FILE_NAME"
+      skip_cleanup: true
+      dpl_version: 1.10.16
+      on:
+        tags: true
   - dist: bionic
     os: linux
   - os: windows
+    deploy:
+    - provider: releases
+      token: "$GITHUB_APIKEY"
+      file: "$FILE_NAME"
+      skip_cleanup: true
+      dpl_version: 2.0.3.beta.4
+      on:
+        tags: true
 os: linux
 dist: xenial
 language: c
@@ -99,13 +114,3 @@ script:
     else
       tar -czf ${FILE_NAME} build/${FILE_ROOT};
     fi
-
-deploy:
-  provider: releases
-  token: ${GITHUB_APIKEY}
-  file: ${FILE_NAME}
-  skip_cleanup: true
-  dpl_version: 2.0.3.beta.4
-  on:
-    tags: true
-    condition: $TRAVIS_OS_NAME == "windows" || $TRAVIS_OS_NAME == "osx" || ($TRAVIS_OS_NAME == "linux" && $TRAVIS_DIST == "xenial")
