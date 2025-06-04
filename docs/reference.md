@@ -175,12 +175,47 @@ l                | size of pointer (size_t)                       | ffi_type_sin
 k                | callback function/closure (only argument type) | ffi_type_pointer
 uppercase letter | pointer to the same type                       | ffi_type_pointer
 
+### Passing functions
 It is possible to pass a q function to C code as a callback (see `qsort` example). 
 In that case argument type should be specified as `"k"`. 
 The function must be presented as a mixed list `(func; argument_types; return_type)`, where `func` is a q function (type `100h`), `argument_types` is a char array with the types the function expects, and `return_type` is a char corresponding to the return type of the function. 
 Note that, as callbacks potentially have unbounded life in C code, they are not deleted after the function completes.
 
-When interfacing with a C function that returns a pointer to a value, using a return type set to an uppercase letter (for example J corresponding to a pointer to a signed int64) the interface
-will not know if its pointing to one value or many. 
-Therefore the return type will be a single atom value of the value being pointed to (not a vector of values, nor a vector of a single value) of values, nor a vector of a single value).
+### Passing pointers to values
+
+Passing a pointer to a value entails using the capitalized form of the data type, and passing a vector type.
+For example, a C function that takes a pointer to an integer (which doubles it value)
+```c
+void ptrTest(int* val){
+   *val=*val+*val;
+}
+```
+is called via
+```q
+ptrTest:.ffi.bind[`libtest.so`ptrTest;"I";" "];
+p:enlist 2i;
+ptrTest(p;::);
+show first p;
+```
+Passing a pointer to a list of values to change requires creating a vector of the appropriate size in q, and the C code only changing those number of values. In this example, the length is also passed and all elements in the vector are set to its index value.
+```c
+void ptrTestWithLen(int* val,int len){
+   int x;
+   for(x=0;x<len;x++){
+       val[x]=x;
+   }
+}
+```
+```q
+ptrTestWithLen:.ffi.bind[`libtest.so`ptrTestWithLen;"Ii";" "];
+p:10#0i;
+ptrTestWithLen(p;count p;::);
+show p;
+```
+
+### Returning pointers
+When interfacing with a C function that returns a pointer to a value, using a return type set to an uppercase letter 
+(for example J corresponding to a pointer to a signed int64) the interface will not know if its pointing to one value or many. 
+Therefore the return type will be a single atom value of the value being pointed to 
+(not a vector of values, nor a vector of a single value) of values, nor a vector of a single value).
 The exception is when the return type is `char*`, where the interface will create a character vector by looking for the null terminator character in the C string.
