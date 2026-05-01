@@ -1,0 +1,55 @@
+name: linux-ffi-build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: rockylinux:8
+
+    env:
+      OUTPUT_FILE: ffikdb-linux.tgz
+      QHOME: ${{ github.workspace }}/qhome
+
+    steps:
+      - name: Install build tools
+        run: |
+          yum -y install \
+            libffi-devel \
+            gcc \
+            gcc-c++ \
+            make \
+            cmake \
+            wget \
+            tar \
+            gzip
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Build 
+        run: |
+          mkdir "$QHOME" && mkdir cmake && cd cmake && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release --target install && cd .. && tar  -zcvf "$OUTPUT_FILE" -C cmake/ffikdb .
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: kdbffi-linux
+          path: ${{ env.OUTPUT_FILE }}
+          retention-days: 1
+
+  release:
+    needs: build
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-assets.yml
