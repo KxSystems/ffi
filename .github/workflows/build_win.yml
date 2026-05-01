@@ -1,0 +1,71 @@
+name: win-ffi-build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      OUTPUT_FILE: ffikdb-win.tgz
+      DL_INSTALL_DIR: ${{ github.workspace }}\cbuild\install
+      FFI_INSTALL_DIR: ${{ github.workspace }}\travis_win\libffi\install
+      LD_LIBRARY_PATH: ${FFI_INSTALL_DIR}\bin:${DL_INSTALL_DIR}\lib:${LD_LIBRARY_PATH}
+      QHOME: ${{ github.workspace }}\qhome
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Download dlfcn
+        shell: pwsh
+        run: |
+          mkdir cbuild
+          $uri = "https://github.com/dlfcn-win32/dlfcn-win32/archive/v1.2.0.tar.gz"
+          $out = "v1.2.0.tar.gz"
+          Invoke-WebRequest -Uri $uri -OutFile $out
+          tar xvf $out -C ./cbuild --strip-components=1
+
+      - name: Build dlfcn
+        run: |
+          cd cbuild
+          mkdir install
+          mkdir build
+          cd build
+          cmake -G "Visual Studio 17 2022" -DCMAKE_INSTALL_PREFIX=${{ env.DL_INSTALL_DIR }} .. -DBUILD_TESTS:BOOL=OFF
+          cmake --build . --config Release
+          cmake --build . --config Release --target install
+          cd ..
+          cd ..
+
+      - name: Build FFI
+        run: |
+          mkdir "${{ env.QHOME }}"
+          mkdir cmake
+          cd cmake
+          cmake -G "Visual Studio 17 2022" ..
+          cmake --build . --config Release
+          cmake --build . --config Release --target install
+          cd ..
+          7z a -tzip -r "${{ env.OUTPUT_FILE }}" cmake\ffikdb\
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: kdbldap-windows
+          path: ${{ env.OUTPUT_FILE }}
+          retention-days: 1
+
+  release:
+    needs: build
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-assets.yml

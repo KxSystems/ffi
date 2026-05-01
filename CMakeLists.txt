@@ -1,5 +1,5 @@
 # CMake version
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10...3.31)
 
 # Set project name
 project(ffikdb C)
@@ -21,4 +21,5 @@ file(COPY examples/ DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/exam
 file(COPY q/ DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/q/)
 
 # Copy q files to QHOME
-install(DIRECTORY q/ DESTINATION $ENV{QHOME}/ CONFIGURATIONS Release)
+file(TO_CMAKE_PATH "$ENV{QHOME}" QHOME_CMAKE)
+install(DIRECTORY q/ DESTINATION "${QHOME_CMAKE}" CONFIGURATIONS Release)

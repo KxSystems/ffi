@@ -30,6 +30,8 @@ target_include_directories(${MY_LIBRARY_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )
 
+message(STATUS "FFI_INSTALL_DIR : $ENV{FFI_INSTALL_DIR}")
+
 if(APPLE)
     # FFI header exists under /usr/include/ffi for ver<=10.13
     target_include_directories(${MY_LIBRARY_NAME} PRIVATE
@@ -37,6 +39,7 @@ if(APPLE)
         $<$<NOT:$<STREQUAL:"$ENV{FFI_INSTALL_DIR}","">>: $ENV{FFI_INSTALL_DIR}/include>
     )
 elseif(WIN32)
+    message(STATUS "DL_INSTALL_DIR : $ENV{DL_INSTALL_DIR}")
     # Windows use installed dlfcn-win32 and installed libffi
     target_include_directories(${MY_LIBRARY_NAME} PRIVATE
         $ENV{DL_INSTALL_DIR}/include/
@@ -119,11 +122,14 @@ set_target_properties(${MY_LIBRARY_NAME} PROPERTIES PREFIX "")
 ##%% Installation %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv/
 
 # Copy built shared object after build instead of during installation
-add_custom_command(TARGET ${MY_LIBRARY_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${MY_LIBRARY_NAME}>" ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/${MY_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
-    DEPENDS ${MY_LIBRARY_NAME}
+add_custom_command(TARGET ${MY_LIBRARY_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib"
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "$<TARGET_FILE:${MY_LIBRARY_NAME}>"
+        "${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/$<TARGET_FILE_NAME:${MY_LIBRARY_NAME}>"
 )
 
 # Install package at release and copy shared object to QHOME
-install(TARGETS ${MY_LIBRARY_NAME} DESTINATION $ENV{QHOME}/${OSFLAG}${BITNESS}/ CONFIGURATIONS Release)
+file(TO_CMAKE_PATH "$ENV{QHOME}" QHOME_CMAKE)
+install(TARGETS ${MY_LIBRARY_NAME} DESTINATION "${QHOME_CMAKE}/${OSFLAG}${BITNESS}" CONFIGURATIONS Release)
